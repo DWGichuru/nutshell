@@ -6,9 +6,7 @@
 
 ## Python
 
-- Python 3.9 (system interpreter; no newer version installed locally - see
-  `blueprint/context/project-overview.md` Open questions before adding
-  `mlx-whisper` in Phase 4)
+- Python 3.14 (via Homebrew `python@3.14`, used to create `venv/`)
 - Type hints on function signatures (params and return type); avoid bare
   `Any` where a concrete type or `TypedDict`/dataclass is known
 - Use `dataclasses` or `TypedDict` for structured shapes (e.g. transcript

@@ -168,7 +168,3 @@ Local only - no host, no public deployment.
 - `build-plan.md` Phase 8 (additional summarization providers, delete-video,
   export options, manual index resync) is explicitly optional/future; treat it
   as a post-MVP backlog, not part of the Phase 1-6 build order above.
-- `blueprint/context/coding-standards.md` still holds the Blueprint's default
-  Next.js/TypeScript/Prisma conventions, which don't apply to this Python +
-  FastAPI + vanilla JS stack. Worth running `/onboard` (or hand-editing) to
-  tune it to the real stack before relying on it during `/implement`.
