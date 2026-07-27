@@ -16,6 +16,10 @@ def video_dir(video_id: str) -> Path:
     return path
 
 
+def audio_path(video_id: str) -> Path:
+    return DATA_ROOT / video_id / "audio.mp3"
+
+
 def write_meta(video_id: str, meta: VideoMeta) -> None:
     meta_path = video_dir(video_id) / "meta.json"
     meta_path.write_text(meta.model_dump_json(indent=2))

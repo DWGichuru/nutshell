@@ -54,7 +54,7 @@
 - Use the palette and typography from `project-overview.md` (Design section)
   as Tailwind theme values
 - No inline styles beyond what's unavoidable for wavesurfer.js mount points
-- Dark mode first, light mode as option
+- Light mode first, dark mode as option
 
 ## Database
 

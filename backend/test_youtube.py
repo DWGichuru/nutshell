@@ -47,6 +47,44 @@ def test_convert_to_mp3_raises_youtube_error_on_ffmpeg_failure(tmp_path, monkeyp
     assert src.exists()
 
 
+def test_trim_audio_replaces_source_with_trimmed_output(tmp_path, monkeypatch):
+    src = tmp_path / "audio.mp3"
+    src.write_bytes(b"original")
+
+    captured_cmd = []
+
+    def fake_run(cmd, check, capture_output):
+        captured_cmd.extend(cmd)
+        (tmp_path / "audio.trimmed.mp3").write_bytes(b"trimmed")
+        return MagicMock()
+
+    monkeypatch.setattr(youtube.subprocess, "run", fake_run)
+
+    result = youtube.trim_audio(src, 10.0, 20.0)
+
+    assert result == src
+    assert src.read_bytes() == b"trimmed"
+    assert "-ss" in captured_cmd
+    assert "10.0" in captured_cmd
+    assert "-to" in captured_cmd
+    assert "20.0" in captured_cmd
+
+
+def test_trim_audio_raises_youtube_error_on_ffmpeg_failure(tmp_path, monkeypatch):
+    src = tmp_path / "audio.mp3"
+    src.write_bytes(b"original")
+
+    def fake_run(cmd, check, capture_output):
+        raise youtube.subprocess.CalledProcessError(1, cmd, stderr=b"boom")
+
+    monkeypatch.setattr(youtube.subprocess, "run", fake_run)
+
+    with pytest.raises(youtube.YouTubeError):
+        youtube.trim_audio(src, 10.0, 20.0)
+
+    assert src.read_bytes() == b"original"
+
+
 class _FakeYDL:
     """Stands in for yt_dlp.YoutubeDL: instantiated with opts, used as a context manager."""
 

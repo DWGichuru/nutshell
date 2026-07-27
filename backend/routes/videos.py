@@ -2,17 +2,20 @@ from datetime import UTC, datetime
 from typing import Any
 
 from fastapi import APIRouter, BackgroundTasks, HTTPException
+from fastapi.responses import FileResponse
 
 from backend.db import upsert_video
 from backend.models import (
     DownloadStartedResponse,
     DownloadStatusResponse,
     MetadataRequest,
+    TrimRequest,
+    TrimResponse,
     VideoMeta,
     VideoMetadataResponse,
 )
-from backend.storage import derive_video_id, video_dir, write_meta
-from backend.youtube import YouTubeError, convert_to_mp3, download_audio, fetch_metadata
+from backend.storage import audio_path, derive_video_id, read_meta, video_dir, write_meta
+from backend.youtube import YouTubeError, convert_to_mp3, download_audio, fetch_metadata, trim_audio
 
 router = APIRouter(prefix="/api/videos", tags=["videos"])
 
@@ -89,3 +92,35 @@ def get_download_status(video_id: str) -> DownloadStatusResponse:
     if status is None:
         raise HTTPException(status_code=404, detail="Unknown video_id")
     return DownloadStatusResponse(**status)
+
+
+@router.get("/{video_id}/audio")
+def get_audio(video_id: str) -> FileResponse:
+    path = audio_path(video_id)
+    if not path.exists():
+        raise HTTPException(status_code=404, detail="Audio not found for video_id")
+    return FileResponse(path, media_type="audio/mpeg")
+
+
+@router.post("/{video_id}/trim", response_model=TrimResponse)
+def trim_video_audio(video_id: str, request: TrimRequest) -> TrimResponse:
+    try:
+        meta = read_meta(video_id)
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail="Unknown video_id") from exc
+
+    if request.start_seconds < 0 or request.start_seconds >= request.end_seconds:
+        raise HTTPException(status_code=400, detail="start_seconds must be >= 0 and less than end_seconds")
+    if request.end_seconds > meta.duration_seconds:
+        raise HTTPException(status_code=400, detail="end_seconds exceeds video duration")
+
+    path = audio_path(video_id)
+    if not path.exists():
+        raise HTTPException(status_code=404, detail="Audio not found for video_id")
+
+    try:
+        trim_audio(path, request.start_seconds, request.end_seconds)
+    except YouTubeError as exc:
+        raise HTTPException(status_code=500, detail=str(exc)) from exc
+
+    return TrimResponse(status="trimmed", duration_seconds=request.end_seconds - request.start_seconds)

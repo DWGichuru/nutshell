@@ -1,3 +1,5 @@
+import json
+
 import pytest
 from fastapi.testclient import TestClient
 
@@ -170,5 +172,79 @@ def test_start_download_invalid_url(monkeypatch):
 
 def test_get_status_unknown_video_id_returns_404():
     response = client.get("/api/videos/does-not-exist/status")
+
+    assert response.status_code == 404
+
+
+def test_get_audio_returns_file_when_present(tmp_path):
+    video_dir = tmp_path / "videos" / "abc123"
+    video_dir.mkdir(parents=True)
+    (video_dir / "audio.mp3").write_bytes(b"fake-audio-bytes")
+
+    response = client.get("/api/videos/abc123/audio")
+
+    assert response.status_code == 200
+    assert response.headers["content-type"] == "audio/mpeg"
+    assert response.content == b"fake-audio-bytes"
+
+
+def test_get_audio_unknown_video_id_returns_404():
+    response = client.get("/api/videos/does-not-exist/audio")
+
+    assert response.status_code == 404
+
+
+def _write_video(tmp_path, video_id, duration_seconds=60):
+    video_dir = tmp_path / "videos" / video_id
+    video_dir.mkdir(parents=True)
+    (video_dir / "audio.mp3").write_bytes(b"original-audio")
+    meta = {
+        "video_id": video_id,
+        "title": "Test Video",
+        "channel": "Test Channel",
+        "duration_seconds": duration_seconds,
+        "date_added": "2026-01-01T00:00:00+00:00",
+        "source_url": "https://youtu.be/fake",
+    }
+    (video_dir / "meta.json").write_text(json.dumps(meta))
+    return video_dir
+
+
+def test_trim_success(tmp_path, monkeypatch):
+    video_dir = _write_video(tmp_path, "abc123")
+
+    def fake_trim_audio(src_path, start_seconds, end_seconds):
+        src_path.write_bytes(b"trimmed-audio")
+        return src_path
+
+    monkeypatch.setattr("backend.routes.videos.trim_audio", fake_trim_audio)
+
+    response = client.post("/api/videos/abc123/trim", json={"start_seconds": 5.0, "end_seconds": 15.0})
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["status"] == "trimmed"
+    assert body["duration_seconds"] == 10.0
+    assert (video_dir / "audio.mp3").read_bytes() == b"trimmed-audio"
+
+
+def test_trim_invalid_range_returns_400(tmp_path):
+    _write_video(tmp_path, "abc123")
+
+    response = client.post("/api/videos/abc123/trim", json={"start_seconds": 15.0, "end_seconds": 5.0})
+
+    assert response.status_code == 400
+
+
+def test_trim_end_exceeds_duration_returns_400(tmp_path):
+    _write_video(tmp_path, "abc123", duration_seconds=30)
+
+    response = client.post("/api/videos/abc123/trim", json={"start_seconds": 0.0, "end_seconds": 60.0})
+
+    assert response.status_code == 400
+
+
+def test_trim_unknown_video_id_returns_404():
+    response = client.post("/api/videos/does-not-exist/trim", json={"start_seconds": 0.0, "end_seconds": 10.0})
 
     assert response.status_code == 404

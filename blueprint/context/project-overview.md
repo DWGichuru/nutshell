@@ -128,7 +128,7 @@ Four views in one app, no client-side router (vanilla HTML/JS):
 
 ### Design
 
-Palette (Tailwind custom theme colors), dark mode first:
+Palette (Tailwind custom theme colors), light mode first, dark mode as option:
 
 | Role | Color | Hex |
 |---|---|---|

@@ -29,12 +29,12 @@ Sequential checklist for building the app. Each phase builds on the previous one
 - [x] Test: download a couple of videos, confirm index rows match folder contents
 
 ## Phase 3: Waveform Trimming (Frontend)
-- [ ] Set up basic frontend page structure with Tailwind CDN included
-- [ ] Integrate wavesurfer.js, load and render waveform for downloaded audio
-- [ ] Implement draggable trim region (start/end handles)
-- [ ] Implement playback preview of the selected trim region
-- [ ] Build endpoint to accept trim start/end and produce a trimmed audio file via `ffmpeg`
-- [ ] Test: trim a sample audio file and confirm output matches selected range
+- [x] Set up basic frontend page structure with Tailwind CDN included
+- [x] Integrate wavesurfer.js, load and render waveform for downloaded audio
+- [x] Implement draggable trim region (start/end handles)
+- [x] Implement playback preview of the selected trim region
+- [x] Build endpoint to accept trim start/end and produce a trimmed audio file via `ffmpeg`
+- [x] Test: trim a sample audio file and confirm output matches selected range
 
 ## Phase 4: Transcription (Local + API)
 - [ ] Design a common transcription adapter interface (e.g. `transcribe(audio_path, method) -> {text, segments}`)

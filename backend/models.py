@@ -30,3 +30,13 @@ class DownloadStartedResponse(BaseModel):
 class DownloadStatusResponse(BaseModel):
     status: str
     error: str | None = None
+
+
+class TrimRequest(BaseModel):
+    start_seconds: float
+    end_seconds: float
+
+
+class TrimResponse(BaseModel):
+    status: str
+    duration_seconds: float

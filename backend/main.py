@@ -2,9 +2,13 @@ from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
 from fastapi import FastAPI
+from fastapi.responses import FileResponse
+from fastapi.staticfiles import StaticFiles
 
 from backend.db import init_db
 from backend.routes.videos import router as videos_router
+
+FRONTEND_DIR = "frontend"
 
 
 @asynccontextmanager
@@ -15,8 +19,9 @@ async def lifespan(app: FastAPI) -> AsyncIterator[None]:
 
 app = FastAPI(title="Nutshell", lifespan=lifespan)
 app.include_router(videos_router)
+app.mount(f"/{FRONTEND_DIR}", StaticFiles(directory=FRONTEND_DIR), name="frontend")
 
 
 @app.get("/")
-def read_root() -> dict[str, str]:
-    return {"message": "hello world"}
+def read_root() -> FileResponse:
+    return FileResponse(f"{FRONTEND_DIR}/index.html")

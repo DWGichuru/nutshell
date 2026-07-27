@@ -33,6 +33,32 @@ def download_audio(url: str, dest_dir: Path) -> Path:
         raise YouTubeError(str(exc)) from exc
 
 
+def trim_audio(src_path: Path, start_seconds: float, end_seconds: float) -> Path:
+    dest_path = src_path.with_name(f"{src_path.stem}.trimmed{src_path.suffix}")
+    try:
+        subprocess.run(
+            [
+                "ffmpeg",
+                "-y",
+                "-i",
+                str(src_path),
+                "-ss",
+                str(start_seconds),
+                "-to",
+                str(end_seconds),
+                str(dest_path),
+            ],
+            check=True,
+            capture_output=True,
+        )
+    except subprocess.CalledProcessError as exc:
+        stderr = exc.stderr.decode(errors="ignore") if exc.stderr else ""
+        raise YouTubeError(f"ffmpeg trim failed: {stderr}") from exc
+
+    dest_path.replace(src_path)
+    return src_path
+
+
 def convert_to_mp3(src_path: Path) -> Path:
     if src_path.suffix == ".mp3":
         return src_path
