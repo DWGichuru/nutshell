@@ -1,7 +1,7 @@
 import pytest
 from fastapi.testclient import TestClient
 
-from backend import storage
+from backend import db, storage
 from backend.main import app
 from backend.routes.videos import estimate_transcription
 from backend.youtube import YouTubeError
@@ -12,6 +12,8 @@ client = TestClient(app)
 @pytest.fixture(autouse=True)
 def isolated_data_root(tmp_path, monkeypatch):
     monkeypatch.setattr(storage, "DATA_ROOT", tmp_path / "videos")
+    monkeypatch.setattr(db, "DB_PATH", tmp_path / "index.db")
+    db.init_db()
 
 
 @pytest.mark.parametrize(
@@ -105,6 +107,16 @@ def test_start_download_and_status_success(monkeypatch, tmp_path):
     assert (video_dir / "audio.mp3").exists()
     meta = (video_dir / "meta.json").read_text()
     assert '"video_id":"abc123"' in meta.replace(" ", "").replace("\n", "")
+
+    conn = db.get_connection(tmp_path / "index.db")
+    try:
+        row = conn.execute(
+            "SELECT video_id, title, channel, duration_seconds, path FROM videos WHERE video_id = ?",
+            ("abc123",),
+        ).fetchone()
+    finally:
+        conn.close()
+    assert row == ("abc123", "Test Video", "Test Channel", 42, str(video_dir))
 
 
 def test_start_download_failure_sets_error_status(monkeypatch):

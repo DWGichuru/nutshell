@@ -3,6 +3,7 @@ from typing import Any
 
 from fastapi import APIRouter, BackgroundTasks, HTTPException
 
+from backend.db import upsert_video
 from backend.models import (
     DownloadStartedResponse,
     DownloadStatusResponse,
@@ -62,6 +63,7 @@ def _run_download(video_id: str, url: str, info: dict[str, Any]) -> None:
             source_url=url,
         )
         write_meta(video_id, meta)
+        upsert_video(meta, dest_dir)
         _download_status[video_id] = {"status": "done", "error": None}
     except Exception as exc:
         _download_status[video_id] = {"status": "error", "error": str(exc)}

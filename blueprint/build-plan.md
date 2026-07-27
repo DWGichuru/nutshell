@@ -22,11 +22,11 @@ Sequential checklist for building the app. Each phase builds on the previous one
 - [x] Test: download a short video and confirm folder/files are created correctly
 
 ## Phase 2: SQLite Index
-- [ ] Design schema: `videos` table (video_id, title, channel, duration, date_added, path)
-- [ ] Create `data/index.db` and initialization script
-- [ ] Write function to insert/update index row on new video download
-- [ ] Write function to rebuild the full index by scanning `data/videos/*/meta.json`
-- [ ] Test: download a couple of videos, confirm index rows match folder contents
+- [x] Design schema: `videos` table (video_id, title, channel, duration, date_added, path)
+- [x] Create `data/index.db` and initialization script
+- [x] Write function to insert/update index row on new video download
+- [x] Write function to rebuild the full index by scanning `data/videos/*/meta.json`
+- [x] Test: download a couple of videos, confirm index rows match folder contents
 
 ## Phase 3: Waveform Trimming (Frontend)
 - [ ] Set up basic frontend page structure with Tailwind CDN included
