@@ -9,21 +9,32 @@ class YouTubeError(Exception):
     """Raised when yt-dlp or ffmpeg can't fetch, download, or convert a video."""
 
 
+PLAYLIST_ERROR_MESSAGE = "This looks like a playlist. Paste a link to a single video instead."
+
+
 def fetch_metadata(url: str) -> dict[str, Any]:
-    ydl_opts = {"quiet": True, "no_warnings": True, "skip_download": True}
+    ydl_opts = {"quiet": True, "no_warnings": True, "skip_download": True, "noplaylist": True}
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:
-            return ydl.extract_info(url, download=False)
+            info = ydl.extract_info(url, download=False)
     except yt_dlp.utils.DownloadError as exc:
         raise YouTubeError(str(exc)) from exc
 
+    if info.get("_type") == "playlist":
+        raise YouTubeError(PLAYLIST_ERROR_MESSAGE)
+    return info
+
 
 def download_audio(url: str, dest_dir: Path) -> Path:
+    # A bare playlist URL isn't rejected here: yt-dlp would already have started
+    # downloading its first entry by the time `_type` is known, so callers must
+    # reject playlists via fetch_metadata() first (every route does).
     ydl_opts = {
         "quiet": True,
         "no_warnings": True,
         "format": "bestaudio/best",
         "outtmpl": str(dest_dir / "audio.%(ext)s"),
+        "noplaylist": True,
     }
     try:
         with yt_dlp.YoutubeDL(ydl_opts) as ydl:

@@ -59,7 +59,7 @@ Sequential checklist for building the app. Each phase builds on the previous one
 - [x] Test: search across multiple videos, confirm correct filtering and reload behavior
 
 ## Phase 7: Polish & Edge Cases
-- [ ] Handle invalid/unreachable YouTube URLs gracefully
+- [x] Handle invalid/unreachable YouTube URLs gracefully
 - [ ] Handle very short clips / silence (transcription edge cases)
 - [ ] Add loading states/spinners for download, transcription, and summarization steps
 - [ ] Confirm Tailwind styling is consistent across all views

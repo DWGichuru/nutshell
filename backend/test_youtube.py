@@ -127,3 +127,33 @@ def test_download_audio_raises_youtube_error_on_download_error(tmp_path, monkeyp
 
     with pytest.raises(youtube.YouTubeError):
         youtube.download_audio("https://youtu.be/bad", tmp_path)
+
+
+def test_fetch_metadata_raises_youtube_error_on_playlist_result(monkeypatch):
+    monkeypatch.setattr(
+        youtube.yt_dlp,
+        "YoutubeDL",
+        _FakeYDL(extract_info_result={"_type": "playlist", "id": "PL123", "title": "Some Playlist"}),
+    )
+
+    with pytest.raises(youtube.YouTubeError, match="playlist"):
+        youtube.fetch_metadata("https://www.youtube.com/playlist?list=PL123")
+
+
+def test_fetch_metadata_passes_noplaylist_option(monkeypatch):
+    fake_ydl = _FakeYDL(extract_info_result={"id": "abc123", "title": "A Video", "duration": 19})
+    monkeypatch.setattr(youtube.yt_dlp, "YoutubeDL", fake_ydl)
+
+    info = youtube.fetch_metadata("https://www.youtube.com/watch?v=abc123&list=PL123")
+
+    assert info["id"] == "abc123"
+    assert fake_ydl.opts["noplaylist"] is True
+
+
+def test_download_audio_passes_noplaylist_option(tmp_path, monkeypatch):
+    fake_ydl = _FakeYDL(extract_info_result={"id": "abc123", "ext": "webm"})
+    monkeypatch.setattr(youtube.yt_dlp, "YoutubeDL", fake_ydl)
+
+    youtube.download_audio("https://www.youtube.com/watch?v=abc123&list=PL123", tmp_path)
+
+    assert fake_ydl.opts["noplaylist"] is True
