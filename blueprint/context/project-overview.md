@@ -1,0 +1,174 @@
+# Nutshell - Project Overview
+
+> A local tool that turns a YouTube video into a trimmed, transcribed, AI-summarized text asset - paste a link, get a searchable summary.
+
+## Problem
+
+Watching or skimming a full YouTube video to extract its key information is
+slow. Nutshell downloads the audio, lets the user trim it to the relevant
+range, transcribes it locally or via API, and generates an AI summary in a
+chosen format - turning a long video into a fast, reusable text asset.
+
+## Users
+
+- Single user, running the app locally on their own machine (M4 Pro MacBook
+  Pro, 24GB RAM).
+- No multi-user support, authentication, or public deployment in scope.
+
+## Features
+
+Build order below follows `build-plan.md` Phases 1-6 (the MVP loop). Phase 7 is
+cross-cutting hardening applied after the loop works end to end, and Phase 8 is
+explicitly optional/future - see Open questions.
+
+1. **YouTube audio download** - paste a link, fetch metadata (title/channel/duration),
+   warn on long videos with an estimated transcription time, then download the
+   best audio track via `yt-dlp` into a per-video folder. Headline feature - the
+   entry point for every other feature.
+2. **SQLite index** - a `videos` table derived from each `meta.json`, giving fast
+   search/filter over past runs without scanning the filesystem. Rebuildable at
+   any time.
+3. **Waveform trimming** - render the downloaded audio as a waveform
+   (wavesurfer.js), let the user drag start/end handles and preview the
+   selection, then produce a trimmed audio file via `ffmpeg`.
+4. **Transcription (local or API)** - a common adapter interface produces
+   `{text, segments}` from either on-device `mlx-whisper` or the OpenAI Whisper
+   API, user-selectable per run, with a method-aware progress indicator.
+5. **AI summarization** - send the transcript to a configured AI provider and
+   generate a summary in a user-picked format (paragraph, bullets, or
+   timestamped/chaptered), saved alongside the transcript.
+6. **Library view (search/filter)** - browse past videos by title/channel/date,
+   reload a video's stored transcript and summaries, and generate new summary
+   formats without re-downloading or re-transcribing.
+
+## Data model
+
+Per video, stored under `data/videos/{video_id}/`:
+
+### meta.json (per-video metadata, source of truth for the video)
+
+- `video_id` (string) - derived id, also the folder name
+- `title` (string)
+- `channel` (string)
+- `duration_seconds` (int)
+- `date_added` (ISO 8601 string)
+- `source_url` (string) - original YouTube URL
+
+### audio.mp3
+
+- The downloaded (and, once trimmed, replaced/derived) audio file for the video.
+
+### transcript.json
+
+- `text` (string) - full transcript
+- `segments` (array of `{start: float, end: float, text: string}`) - timestamped
+  segments
+- `method` (enum: `"local"` | `"api"`) - which transcription adapter produced
+  this result
+
+### summaries/{timestamp}\_{format}.md
+
+- One file per summary generation; `format` is one of `paragraph`, `bullets`,
+  `chaptered`. Multiple summary runs per video are all preserved, never
+  overwritten.
+
+### index.db (`videos` table, at `data/index.db`)
+
+- `video_id` (text, primary key)
+- `title` (text)
+- `channel` (text)
+- `duration_seconds` (int)
+- `date_added` (text)
+- `path` (text) - folder path for the video
+
+> Rebuildable at any time by re-scanning `data/videos/*/meta.json`; it is a
+> derived index, not a source of truth.
+
+### .env (not a data model, but load-bearing)
+
+- AI provider API key(s) (e.g. `ANTHROPIC_API_KEY`, `OPENAI_API_KEY`), excluded
+  from version control.
+
+## Tech stack
+
+- **Backend** - Python + FastAPI, serving both the API and the frontend.
+- **Audio download** - `yt-dlp` for metadata fetch and best-audio-track download.
+- **Audio processing** - `ffmpeg` for format conversion and trimming.
+- **Transcription** - `mlx-whisper` (local, Metal-accelerated) or OpenAI Whisper
+  API, behind a shared adapter interface, user-selectable per run.
+- **Summarization** - adapter pattern over AI providers (e.g. Anthropic,
+  OpenAI); API key loaded via `python-dotenv`.
+- **Index/search** - SQLite via Python's stdlib `sqlite3`, no ORM.
+- **Frontend** - HTML/JS + Tailwind CSS via CDN (no build step) +
+  wavesurfer.js for waveform visualization/trimming.
+- **Deployment** - local only, FastAPI dev server (`uvicorn`) at `localhost`.
+
+## Monetization
+
+Not in v1 - single-user local tool, no billing or accounts.
+
+## UI/UX
+
+Four views in one app, no client-side router (vanilla HTML/JS):
+
+- **Home / New Summary** - URL input; on submit, fetches and shows
+  title/channel/duration; shows a warning banner with an estimated processing
+  time if duration exceeds the threshold (default 60 min), and requires
+  confirmation to proceed.
+- **Download & Trim** - audio downloads, waveform renders, user drags trim
+  handles and previews the selection, "Transcribe" proceeds with the trimmed
+  range.
+- **Transcription & Summary** - method picker (Local vs API, with a cost note
+  for API), method-aware progress indicator, transcript display, format picker
+  (paragraph/bullets/chaptered) that triggers summary generation without
+  re-transcribing.
+- **Library** - searchable/filterable list of past videos (title/channel/date);
+  selecting one reloads its `meta.json`, `transcript.json`, and past summaries,
+  with the option to generate a new summary format in place.
+
+### Design
+
+Palette (Tailwind custom theme colors), dark mode first:
+
+| Role | Color | Hex |
+|---|---|---|
+| Primary / Brand | Terracotta | `#C96F45` |
+| Primary Dark | Burnt Terracotta | `#A85A38` |
+| Surface / Background | Cream | `#F5F1EA` |
+| Card / Panel | Warm Ivory | `#F0E0C8` |
+| Ink / Primary Text | Dark Espresso | `#3A2A1E` |
+| Muted Text | Warm Gray | `#8A7A6A` |
+| Dark Surface | Near-Black Brown | `#1E1B16` |
+| Success / Confirm | Sage Green | `#3D5A3D` |
+| Warning | Muted Rust | `#B5533C` |
+
+Typography: serif (Georgia or similar) for wordmark/headings, system
+sans-serif/Inter for body and controls. Icon/wordmark assets live in
+`blueprint/assets/` (`icon.svg`, `favicon.svg`, `wordmark-light.svg`,
+`wordmark-dark.svg`).
+
+## Deployment
+
+Local only - no host, no public deployment.
+
+- **Run:** FastAPI dev server via `uvicorn`, accessed at `localhost`.
+- **Env vars:** AI provider API key(s) in `.env` (excluded from version
+  control); no other secrets.
+- **Storage:** local filesystem (`data/videos/`) + local SQLite file
+  (`data/index.db`); both excluded from version control.
+- **No database server, no workers/cron, no health checks, no domain.**
+
+## Open questions
+
+- `build-plan.md` Phase 0 (project/environment setup: repo init, venv, core
+  deps, folder structure, hello-world FastAPI app) is pre-build scaffolding,
+  not a feature - it isn't reflected in Features above and shouldn't be spec'd
+  through `/feature`. It's being done directly as initial scaffolding per this
+  request.
+- `build-plan.md` Phase 8 (additional summarization providers, delete-video,
+  export options, manual index resync) is explicitly optional/future; treat it
+  as a post-MVP backlog, not part of the Phase 1-6 build order above.
+- `blueprint/context/coding-standards.md` still holds the Blueprint's default
+  Next.js/TypeScript/Prisma conventions, which don't apply to this Python +
+  FastAPI + vanilla JS stack. Worth running `/onboard` (or hand-editing) to
+  tune it to the real stack before relying on it during `/implement`.

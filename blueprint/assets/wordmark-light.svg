@@ -1,0 +1,10 @@
+<svg viewBox="0 0 420 100" xmlns="http://www.w3.org/2000/svg">
+<rect width="420" height="100" fill="#F5F1EA"/>
+<g transform="translate(20,15)">
+<rect width="70" height="70" rx="16" fill="#C96F45"/>
+<path d="M35 18 C25 18 20 27 20 35 C20 46 27 55 35 55 C43 55 50 46 50 35 C50 27 45 18 35 18 Z" fill="#F0E0C8"/>
+<path d="M35 21 L35 52" stroke="#C96F45" stroke-width="2.5"/>
+<path d="M24 29 Q35 32 46 29" stroke="#C96F45" stroke-width="2" fill="none"/>
+</g>
+<text x="110" y="60" font-family="Georgia, serif" font-size="38" font-weight="bold" fill="#3A2A1E">Nutshell</text>
+</svg>
