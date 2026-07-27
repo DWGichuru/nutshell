@@ -65,7 +65,15 @@
               Download
             </button>
           </div>
-          <p id="download-status" class="mt-3 text-sm text-warm-gray"></p>
+          <div class="mt-3 flex items-center gap-2">
+            <span
+              id="download-spinner"
+              class="hidden h-4 w-4 animate-spin rounded-full border-2 border-warm-gray/30 border-t-terracotta"
+              role="status"
+              aria-label="Loading"
+            ></span>
+            <p id="download-status" class="text-sm text-warm-gray"></p>
+          </div>
           <p id="download-error" class="mt-3 text-sm text-rust hidden"></p>
         </section>
 
@@ -134,7 +142,15 @@
           >
             Transcribe
           </button>
-          <p id="transcribe-status" class="mt-3 text-sm text-warm-gray"></p>
+          <div class="mt-3 flex items-center gap-2">
+            <span
+              id="transcribe-spinner"
+              class="hidden h-4 w-4 animate-spin rounded-full border-2 border-warm-gray/30 border-t-terracotta"
+              role="status"
+              aria-label="Loading"
+            ></span>
+            <p id="transcribe-status" class="text-sm text-warm-gray"></p>
+          </div>
           <p id="transcribe-error" class="mt-3 text-sm text-rust hidden"></p>
           <pre id="transcript-display" class="mt-4 hidden whitespace-pre-wrap rounded bg-cream p-4 text-sm dark:bg-espresso/40"></pre>
         </section>
@@ -173,7 +189,15 @@
           >
             Summarize
           </button>
-          <p id="summarize-status" class="mt-3 text-sm text-warm-gray"></p>
+          <div class="mt-3 flex items-center gap-2">
+            <span
+              id="summarize-spinner"
+              class="hidden h-4 w-4 animate-spin rounded-full border-2 border-warm-gray/30 border-t-terracotta"
+              role="status"
+              aria-label="Loading"
+            ></span>
+            <p id="summarize-status" class="text-sm text-warm-gray"></p>
+          </div>
           <p id="summarize-error" class="mt-3 text-sm text-rust hidden"></p>
           <pre id="summary-display" class="mt-4 hidden whitespace-pre-wrap rounded bg-cream p-4 text-sm dark:bg-espresso/40"></pre>
         </section>
@@ -259,7 +283,15 @@
           >
             Generate summary
           </button>
-          <p id="library-summarize-status" class="mt-3 text-sm text-warm-gray"></p>
+          <div class="mt-3 flex items-center gap-2">
+            <span
+              id="library-summarize-spinner"
+              class="hidden h-4 w-4 animate-spin rounded-full border-2 border-warm-gray/30 border-t-terracotta"
+              role="status"
+              aria-label="Loading"
+            ></span>
+            <p id="library-summarize-status" class="text-sm text-warm-gray"></p>
+          </div>
           <p id="library-summarize-error" class="mt-3 text-sm text-rust hidden"></p>
         </section>
       </main>

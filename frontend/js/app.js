@@ -2,6 +2,7 @@ const urlInput = document.getElementById("video-url");
 const downloadButton = document.getElementById("download-button");
 const statusEl = document.getElementById("download-status");
 const errorEl = document.getElementById("download-error");
+const downloadSpinnerEl = document.getElementById("download-spinner");
 const trimSection = document.getElementById("trim-section");
 const trimStartLabel = document.getElementById("trim-start");
 const trimEndLabel = document.getElementById("trim-end");
@@ -16,11 +17,13 @@ const transcribeSection = document.getElementById("transcribe-section");
 const transcribeButton = document.getElementById("transcribe-button");
 const transcribeStatusEl = document.getElementById("transcribe-status");
 const transcribeErrorEl = document.getElementById("transcribe-error");
+const transcribeSpinnerEl = document.getElementById("transcribe-spinner");
 const transcriptDisplayEl = document.getElementById("transcript-display");
 const summarizeSection = document.getElementById("summarize-section");
 const summarizeButton = document.getElementById("summarize-button");
 const summarizeStatusEl = document.getElementById("summarize-status");
 const summarizeErrorEl = document.getElementById("summarize-error");
+const summarizeSpinnerEl = document.getElementById("summarize-spinner");
 const summaryDisplayEl = document.getElementById("summary-display");
 
 const navNewSummaryButton = document.getElementById("nav-new-summary");
@@ -41,6 +44,7 @@ const librarySummariesEl = document.getElementById("library-summaries");
 const librarySummarizeButton = document.getElementById("library-summarize-button");
 const librarySummarizeStatusEl = document.getElementById("library-summarize-status");
 const librarySummarizeErrorEl = document.getElementById("library-summarize-error");
+const librarySummarizeSpinnerEl = document.getElementById("library-summarize-spinner");
 
 const STATUS_POLL_INTERVAL_MS = 2000;
 const SKIP_SECONDS = 5;
@@ -67,6 +71,10 @@ function setStatus(message) {
   statusEl.textContent = message;
 }
 
+function setSpinner(spinnerEl, isBusy) {
+  spinnerEl.classList.toggle("hidden", !isBusy);
+}
+
 function setError(message) {
   if (message) {
     errorEl.textContent = message;
@@ -85,11 +93,13 @@ async function pollDownloadStatus(videoId) {
   const body = await response.json();
 
   if (body.status === "done") {
+    setSpinner(downloadSpinnerEl, false);
     setStatus("Download complete.");
     onVideoReady(videoId);
     return;
   }
   if (body.status === "error") {
+    setSpinner(downloadSpinnerEl, false);
     setError(body.error || "Download failed.");
     setStatus("");
     downloadButton.disabled = false;
@@ -174,6 +184,7 @@ async function startDownload() {
 
   setError(null);
   downloadButton.disabled = true;
+  setSpinner(downloadSpinnerEl, true);
   setStatus("Starting download...");
 
   try {
@@ -191,6 +202,7 @@ async function startDownload() {
     const body = await response.json();
     pollDownloadStatus(body.video_id);
   } catch (err) {
+    setSpinner(downloadSpinnerEl, false);
     setError(err.message);
     setStatus("");
     downloadButton.disabled = false;
@@ -265,12 +277,14 @@ async function pollTranscriptionStatus(videoId) {
   const body = await response.json();
 
   if (body.status === "done") {
+    setSpinner(transcribeSpinnerEl, false);
     transcribeStatusEl.textContent = "Transcription complete.";
     showTranscript(videoId);
     transcribeButton.disabled = false;
     return;
   }
   if (body.status === "error") {
+    setSpinner(transcribeSpinnerEl, false);
     setTranscribeError(body.error || "Transcription failed.");
     transcribeStatusEl.textContent = "";
     transcribeButton.disabled = false;
@@ -318,12 +332,14 @@ async function pollSummarizationStatus(videoId) {
   const body = await response.json();
 
   if (body.status === "done") {
+    setSpinner(summarizeSpinnerEl, false);
     summarizeStatusEl.textContent = "Summary complete.";
     showLatestSummary(videoId);
     summarizeButton.disabled = false;
     return;
   }
   if (body.status === "error") {
+    setSpinner(summarizeSpinnerEl, false);
     setSummarizeError(body.error || "Summarization failed.");
     summarizeStatusEl.textContent = "";
     summarizeButton.disabled = false;
@@ -354,6 +370,7 @@ async function startSummarization() {
 
   setSummarizeError(null);
   summarizeButton.disabled = true;
+  setSpinner(summarizeSpinnerEl, true);
   summarizeStatusEl.textContent = "Starting summarization...";
   summaryDisplayEl.classList.add("hidden");
 
@@ -371,6 +388,7 @@ async function startSummarization() {
 
     pollSummarizationStatus(videoId);
   } catch (err) {
+    setSpinner(summarizeSpinnerEl, false);
     setSummarizeError(err.message);
     summarizeStatusEl.textContent = "";
     summarizeButton.disabled = false;
@@ -383,6 +401,7 @@ async function startTranscription() {
 
   setTranscribeError(null);
   transcribeButton.disabled = true;
+  setSpinner(transcribeSpinnerEl, true);
   transcribeStatusEl.textContent = "Starting transcription...";
   transcriptDisplayEl.classList.add("hidden");
 
@@ -400,6 +419,7 @@ async function startTranscription() {
 
     pollTranscriptionStatus(videoId);
   } catch (err) {
+    setSpinner(transcribeSpinnerEl, false);
     setTranscribeError(err.message);
     transcribeStatusEl.textContent = "";
     transcribeButton.disabled = false;
@@ -577,12 +597,14 @@ async function pollLibrarySummarizationStatus(videoId) {
   if (videoId !== currentLibraryVideoId) return;
 
   if (body.status === "done") {
+    setSpinner(librarySummarizeSpinnerEl, false);
     librarySummarizeStatusEl.textContent = "Summary complete.";
     await showLibrarySummaries(videoId);
     librarySummarizeButton.disabled = false;
     return;
   }
   if (body.status === "error") {
+    setSpinner(librarySummarizeSpinnerEl, false);
     setLibrarySummarizeError(body.error || "Summarization failed.");
     librarySummarizeStatusEl.textContent = "";
     librarySummarizeButton.disabled = false;
@@ -600,6 +622,7 @@ async function startLibrarySummarization() {
 
   setLibrarySummarizeError(null);
   librarySummarizeButton.disabled = true;
+  setSpinner(librarySummarizeSpinnerEl, true);
   librarySummarizeStatusEl.textContent = "Starting summarization...";
 
   try {
@@ -616,6 +639,7 @@ async function startLibrarySummarization() {
 
     pollLibrarySummarizationStatus(videoId);
   } catch (err) {
+    setSpinner(librarySummarizeSpinnerEl, false);
     setLibrarySummarizeError(err.message);
     librarySummarizeStatusEl.textContent = "";
     librarySummarizeButton.disabled = false;
