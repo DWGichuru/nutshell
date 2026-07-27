@@ -7,3 +7,4 @@ anthropic
 mlx-whisper
 pytest
 httpx
+playwright

@@ -109,6 +109,8 @@ Python + FastAPI project. Activate the virtual environment first: `source venv/b
 - Install deps: `pip install -r requirements.txt`
 - Dev server: `uvicorn backend.main:app --reload` (http://localhost:8000)
 - Test: `pytest`
+- Browser check: Playwright (Python) is installed for browser verification; Chromium is
+  already downloaded (`playwright install chromium`).
 
 Tests are configured (pytest) - a build step that adds in-scope logic must ship
 a passing test in the same diff, per `coding-standards.md`.
