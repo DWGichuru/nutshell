@@ -38,7 +38,7 @@ Sequential checklist for building the app. Each phase builds on the previous one
 
 ## Phase 4: Transcription (Local + API)
 - [x] 4a. API transcription path - adapter interface, OpenAI Whisper API adapter, endpoint, method-aware progress status, `transcript.json` save, method picker UI showing API as the working option
-- [ ] 4b. Local transcription path - `mlx-whisper` local adapter, enable Local in the method picker, local-specific progress handling, test comparing both methods' output and recorded method
+- [x] 4b. Local transcription path - `mlx-whisper` local adapter, enable Local in the method picker, local-specific progress handling, test comparing both methods' output and recorded method
 
 ## Phase 5: AI Summarization
 - [ ] Design adapter interface for summarization providers (e.g. `summarize(transcript, format, api_key)`)

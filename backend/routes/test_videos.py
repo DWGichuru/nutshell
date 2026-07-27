@@ -286,12 +286,33 @@ def test_transcribe_api_success(monkeypatch, tmp_path):
     assert '"method":"api"' in saved.replace(" ", "").replace("\n", "")
 
 
-def test_transcribe_local_method_returns_400(tmp_path):
+def test_transcribe_local_success(monkeypatch, tmp_path):
+    from backend.adapters.transcription.base import TranscriptResult, TranscriptSegment
+
     _write_video(tmp_path, "abc123")
+
+    def fake_transcribe(audio_path):
+        return TranscriptResult(
+            text="hello from local",
+            segments=[TranscriptSegment(start=0.0, end=2.0, text="hello from local")],
+            method="local",
+        )
+
+    monkeypatch.setattr("backend.routes.videos.transcribe_local", fake_transcribe)
 
     response = client.post("/api/videos/abc123/transcribe", json={"method": "local"})
 
-    assert response.status_code == 400
+    assert response.status_code == 200
+
+    status_response = client.get("/api/videos/abc123/transcription/status")
+    assert status_response.status_code == 200
+    assert status_response.json() == {"status": "done", "error": None}
+
+    transcript_response = client.get("/api/videos/abc123/transcript")
+    assert transcript_response.status_code == 200
+    transcript_body = transcript_response.json()
+    assert transcript_body["text"] == "hello from local"
+    assert transcript_body["method"] == "local"
 
 
 def test_transcribe_failure_sets_error_status(monkeypatch, tmp_path):

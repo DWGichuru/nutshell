@@ -4,6 +4,7 @@ from typing import Any
 from fastapi import APIRouter, BackgroundTasks, HTTPException
 from fastapi.responses import FileResponse
 
+from backend.adapters.transcription.local_mlx import transcribe as transcribe_local
 from backend.adapters.transcription.openai_api import transcribe as transcribe_api
 from backend.db import upsert_video
 from backend.models import (
@@ -141,10 +142,11 @@ def trim_video_audio(video_id: str, request: TrimRequest) -> TrimResponse:
     return TrimResponse(status="trimmed", duration_seconds=request.end_seconds - request.start_seconds)
 
 
-def _run_transcription(video_id: str) -> None:
+def _run_transcription(video_id: str, method: str) -> None:
     _transcription_status[video_id] = {"status": "transcribing", "error": None}
     try:
-        result = transcribe_api(audio_path(video_id))
+        adapter = transcribe_api if method == "api" else transcribe_local
+        result = adapter(audio_path(video_id))
         transcript = Transcript(
             text=result.text,
             segments=[
@@ -171,11 +173,8 @@ def start_transcription(
     if not audio_path(video_id).exists():
         raise HTTPException(status_code=404, detail="Audio not found for video_id")
 
-    if request.method == "local":
-        raise HTTPException(status_code=400, detail="Local transcription is not yet supported")
-
     _transcription_status[video_id] = {"status": "pending", "error": None}
-    background_tasks.add_task(_run_transcription, video_id)
+    background_tasks.add_task(_run_transcription, video_id, request.method)
 
     return TranscriptionStartedResponse(video_id=video_id, status="pending")
 

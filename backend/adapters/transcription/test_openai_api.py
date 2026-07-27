@@ -1,40 +1,8 @@
-from dataclasses import dataclass
-
 import pytest
 
 from backend.adapters.transcription import openai_api
 from backend.adapters.transcription.base import TranscriptionError
-
-
-@dataclass
-class FakeSegment:
-    start: float
-    end: float
-    text: str
-
-
-@dataclass
-class FakeTranscription:
-    text: str
-    segments: list[FakeSegment]
-
-
-class FakeTranscriptions:
-    def __init__(self, response):
-        self._response = response
-
-    def create(self, **kwargs):
-        return self._response
-
-
-class FakeAudio:
-    def __init__(self, response):
-        self.transcriptions = FakeTranscriptions(response)
-
-
-class FakeOpenAI:
-    def __init__(self, response):
-        self.audio = FakeAudio(response)
+from backend.adapters.transcription.fakes import FakeOpenAI, FakeSegment, FakeTranscription
 
 
 def test_transcribe_maps_response_to_transcript_result(monkeypatch, tmp_path):
