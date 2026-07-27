@@ -12,14 +12,14 @@ Sequential checklist for building the app. Each phase builds on the previous one
 - [x] Create minimal FastAPI app that runs and serves a "hello world" route
 
 ## Phase 1: YouTube Download
-- [ ] Build endpoint to accept a YouTube URL
-- [ ] Fetch video metadata (title, channel, duration) via `yt-dlp` without downloading
-- [ ] Implement duration check — return warning + estimated transcription time if over threshold (e.g. 60 min)
-- [ ] Implement audio download via `yt-dlp` (best audio track)
-- [ ] Convert downloaded audio to a consistent format via `ffmpeg` if needed
-- [ ] Generate `video_id` and create `data/videos/{video_id}/` folder
-- [ ] Save `audio.mp3` and `meta.json` (title, channel, duration, date added)
-- [ ] Test: download a short video and confirm folder/files are created correctly
+- [x] Build endpoint to accept a YouTube URL
+- [x] Fetch video metadata (title, channel, duration) via `yt-dlp` without downloading
+- [x] Implement duration check — return warning + estimated transcription time if over threshold (e.g. 60 min)
+- [x] Implement audio download via `yt-dlp` (best audio track)
+- [x] Convert downloaded audio to a consistent format via `ffmpeg` if needed
+- [x] Generate `video_id` and create `data/videos/{video_id}/` folder
+- [x] Save `audio.mp3` and `meta.json` (title, channel, duration, date added)
+- [x] Test: download a short video and confirm folder/files are created correctly
 
 ## Phase 2: SQLite Index
 - [ ] Design schema: `videos` table (video_id, title, channel, duration, date_added, path)

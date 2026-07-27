@@ -1,0 +1,52 @@
+import subprocess
+from pathlib import Path
+from typing import Any
+
+import yt_dlp
+
+
+class YouTubeError(Exception):
+    """Raised when yt-dlp or ffmpeg can't fetch, download, or convert a video."""
+
+
+def fetch_metadata(url: str) -> dict[str, Any]:
+    ydl_opts = {"quiet": True, "no_warnings": True, "skip_download": True}
+    try:
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            return ydl.extract_info(url, download=False)
+    except yt_dlp.utils.DownloadError as exc:
+        raise YouTubeError(str(exc)) from exc
+
+
+def download_audio(url: str, dest_dir: Path) -> Path:
+    ydl_opts = {
+        "quiet": True,
+        "no_warnings": True,
+        "format": "bestaudio/best",
+        "outtmpl": str(dest_dir / "audio.%(ext)s"),
+    }
+    try:
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
+            info = ydl.extract_info(url, download=True)
+            return Path(ydl.prepare_filename(info))
+    except yt_dlp.utils.DownloadError as exc:
+        raise YouTubeError(str(exc)) from exc
+
+
+def convert_to_mp3(src_path: Path) -> Path:
+    if src_path.suffix == ".mp3":
+        return src_path
+
+    dest_path = src_path.with_suffix(".mp3")
+    try:
+        subprocess.run(
+            ["ffmpeg", "-y", "-i", str(src_path), str(dest_path)],
+            check=True,
+            capture_output=True,
+        )
+    except subprocess.CalledProcessError as exc:
+        stderr = exc.stderr.decode(errors="ignore") if exc.stderr else ""
+        raise YouTubeError(f"ffmpeg conversion failed: {stderr}") from exc
+
+    src_path.unlink()
+    return dest_path
