@@ -4,17 +4,31 @@ from typing import Any
 from fastapi import APIRouter, BackgroundTasks, HTTPException
 from fastapi.responses import FileResponse
 
+from backend.adapters.transcription.openai_api import transcribe as transcribe_api
 from backend.db import upsert_video
 from backend.models import (
     DownloadStartedResponse,
     DownloadStatusResponse,
     MetadataRequest,
+    TranscribeRequest,
+    Transcript,
+    TranscriptionStartedResponse,
+    TranscriptionStatusResponse,
+    TranscriptSegmentModel,
     TrimRequest,
     TrimResponse,
     VideoMeta,
     VideoMetadataResponse,
 )
-from backend.storage import audio_path, derive_video_id, read_meta, video_dir, write_meta
+from backend.storage import (
+    audio_path,
+    derive_video_id,
+    read_meta,
+    read_transcript,
+    video_dir,
+    write_meta,
+    write_transcript,
+)
 from backend.youtube import YouTubeError, convert_to_mp3, download_audio, fetch_metadata, trim_audio
 
 router = APIRouter(prefix="/api/videos", tags=["videos"])
@@ -23,6 +37,7 @@ DURATION_WARNING_THRESHOLD_SECONDS = 3600
 TRANSCRIPTION_ESTIMATE_MULTIPLIER = 0.5
 
 _download_status: dict[str, dict[str, str | None]] = {}
+_transcription_status: dict[str, dict[str, str | None]] = {}
 
 
 def estimate_transcription(duration_seconds: int) -> tuple[bool, float | None]:
@@ -124,3 +139,58 @@ def trim_video_audio(video_id: str, request: TrimRequest) -> TrimResponse:
         raise HTTPException(status_code=500, detail=str(exc)) from exc
 
     return TrimResponse(status="trimmed", duration_seconds=request.end_seconds - request.start_seconds)
+
+
+def _run_transcription(video_id: str) -> None:
+    _transcription_status[video_id] = {"status": "transcribing", "error": None}
+    try:
+        result = transcribe_api(audio_path(video_id))
+        transcript = Transcript(
+            text=result.text,
+            segments=[
+                TranscriptSegmentModel(start=segment.start, end=segment.end, text=segment.text)
+                for segment in result.segments
+            ],
+            method=result.method,
+        )
+        write_transcript(video_id, transcript)
+        _transcription_status[video_id] = {"status": "done", "error": None}
+    except Exception as exc:
+        _transcription_status[video_id] = {"status": "error", "error": str(exc)}
+
+
+@router.post("/{video_id}/transcribe", response_model=TranscriptionStartedResponse)
+def start_transcription(
+    video_id: str, request: TranscribeRequest, background_tasks: BackgroundTasks
+) -> TranscriptionStartedResponse:
+    try:
+        read_meta(video_id)
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail="Unknown video_id") from exc
+
+    if not audio_path(video_id).exists():
+        raise HTTPException(status_code=404, detail="Audio not found for video_id")
+
+    if request.method == "local":
+        raise HTTPException(status_code=400, detail="Local transcription is not yet supported")
+
+    _transcription_status[video_id] = {"status": "pending", "error": None}
+    background_tasks.add_task(_run_transcription, video_id)
+
+    return TranscriptionStartedResponse(video_id=video_id, status="pending")
+
+
+@router.get("/{video_id}/transcription/status", response_model=TranscriptionStatusResponse)
+def get_transcription_status(video_id: str) -> TranscriptionStatusResponse:
+    status = _transcription_status.get(video_id)
+    if status is None:
+        raise HTTPException(status_code=404, detail="Unknown video_id")
+    return TranscriptionStatusResponse(**status)
+
+
+@router.get("/{video_id}/transcript", response_model=Transcript)
+def get_transcript(video_id: str) -> Transcript:
+    try:
+        return read_transcript(video_id)
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail="Transcript not found for video_id") from exc

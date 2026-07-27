@@ -3,7 +3,7 @@ from datetime import UTC, datetime
 import pytest
 
 from backend import storage
-from backend.models import VideoMeta
+from backend.models import Transcript, TranscriptSegmentModel, VideoMeta
 
 
 @pytest.fixture(autouse=True)
@@ -36,3 +36,18 @@ def test_write_and_read_meta_round_trip():
 
     assert loaded == meta
     assert (storage.DATA_ROOT / "abc123" / "meta.json").exists()
+
+
+def test_write_and_read_transcript_round_trip():
+    storage.video_dir("abc123")
+    transcript = Transcript(
+        text="hello world",
+        segments=[TranscriptSegmentModel(start=0.0, end=1.5, text="hello world")],
+        method="api",
+    )
+
+    storage.write_transcript("abc123", transcript)
+    loaded = storage.read_transcript("abc123")
+
+    assert loaded == transcript
+    assert (storage.DATA_ROOT / "abc123" / "transcript.json").exists()

@@ -1,3 +1,5 @@
+from typing import Literal
+
 from pydantic import BaseModel
 
 
@@ -40,3 +42,29 @@ class TrimRequest(BaseModel):
 class TrimResponse(BaseModel):
     status: str
     duration_seconds: float
+
+
+class TranscriptSegmentModel(BaseModel):
+    start: float
+    end: float
+    text: str
+
+
+class Transcript(BaseModel):
+    text: str
+    segments: list[TranscriptSegmentModel]
+    method: Literal["local", "api"]
+
+
+class TranscribeRequest(BaseModel):
+    method: Literal["local", "api"]
+
+
+class TranscriptionStartedResponse(BaseModel):
+    video_id: str
+    status: str
+
+
+class TranscriptionStatusResponse(BaseModel):
+    status: str
+    error: str | None = None

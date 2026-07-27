@@ -12,6 +12,11 @@ const trimErrorEl = document.getElementById("trim-error");
 const playPauseButton = document.getElementById("play-pause-button");
 const skipBackButton = document.getElementById("skip-back-button");
 const skipForwardButton = document.getElementById("skip-forward-button");
+const transcribeSection = document.getElementById("transcribe-section");
+const transcribeButton = document.getElementById("transcribe-button");
+const transcribeStatusEl = document.getElementById("transcribe-status");
+const transcribeErrorEl = document.getElementById("transcribe-error");
+const transcriptDisplayEl = document.getElementById("transcript-display");
 
 const STATUS_POLL_INTERVAL_MS = 2000;
 const SKIP_SECONDS = 5;
@@ -205,11 +210,87 @@ async function trimSelection() {
 
     trimStatusEl.textContent = "Trim complete.";
     renderWaveform(videoId);
+    transcribeSection.classList.remove("hidden");
+    transcribeSection.dataset.videoId = videoId;
   } catch (err) {
     setTrimError(err.message);
     trimStatusEl.textContent = "";
   } finally {
     trimButton.disabled = false;
+  }
+}
+
+function setTranscribeError(message) {
+  if (message) {
+    transcribeErrorEl.textContent = message;
+    transcribeErrorEl.classList.remove("hidden");
+  } else {
+    transcribeErrorEl.classList.add("hidden");
+    transcribeErrorEl.textContent = "";
+  }
+}
+
+async function pollTranscriptionStatus(videoId) {
+  const response = await fetch(`/api/videos/${videoId}/transcription/status`);
+  if (!response.ok) {
+    throw new Error("Unable to check transcription status.");
+  }
+  const body = await response.json();
+
+  if (body.status === "done") {
+    transcribeStatusEl.textContent = "Transcription complete.";
+    showTranscript(videoId);
+    transcribeButton.disabled = false;
+    return;
+  }
+  if (body.status === "error") {
+    setTranscribeError(body.error || "Transcription failed.");
+    transcribeStatusEl.textContent = "";
+    transcribeButton.disabled = false;
+    return;
+  }
+
+  transcribeStatusEl.textContent = `Status: ${body.status}...`;
+  setTimeout(() => pollTranscriptionStatus(videoId), STATUS_POLL_INTERVAL_MS);
+}
+
+async function showTranscript(videoId) {
+  const response = await fetch(`/api/videos/${videoId}/transcript`);
+  if (!response.ok) {
+    setTranscribeError("Unable to load transcript.");
+    return;
+  }
+  const body = await response.json();
+  transcriptDisplayEl.textContent = body.text;
+  transcriptDisplayEl.classList.remove("hidden");
+}
+
+async function startTranscription() {
+  const videoId = transcribeSection.dataset.videoId;
+  const method = document.querySelector('input[name="transcription-method"]:checked').value;
+
+  setTranscribeError(null);
+  transcribeButton.disabled = true;
+  transcribeStatusEl.textContent = "Starting transcription...";
+  transcriptDisplayEl.classList.add("hidden");
+
+  try {
+    const response = await fetch(`/api/videos/${videoId}/transcribe`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ method }),
+    });
+
+    if (!response.ok) {
+      const body = await response.json().catch(() => ({}));
+      throw new Error(body.detail || "Transcription request failed.");
+    }
+
+    pollTranscriptionStatus(videoId);
+  } catch (err) {
+    setTranscribeError(err.message);
+    transcribeStatusEl.textContent = "";
+    transcribeButton.disabled = false;
   }
 }
 
@@ -219,3 +300,4 @@ trimButton.addEventListener("click", trimSelection);
 playPauseButton.addEventListener("click", togglePlayPause);
 skipBackButton.addEventListener("click", skipBack);
 skipForwardButton.addEventListener("click", skipForward);
+transcribeButton.addEventListener("click", startTranscription);

@@ -248,3 +248,82 @@ def test_trim_unknown_video_id_returns_404():
     response = client.post("/api/videos/does-not-exist/trim", json={"start_seconds": 0.0, "end_seconds": 10.0})
 
     assert response.status_code == 404
+
+
+def test_transcribe_api_success(monkeypatch, tmp_path):
+    from backend.adapters.transcription.base import TranscriptResult, TranscriptSegment
+
+    _write_video(tmp_path, "abc123")
+
+    def fake_transcribe(audio_path):
+        return TranscriptResult(
+            text="hello world",
+            segments=[TranscriptSegment(start=0.0, end=1.5, text="hello world")],
+            method="api",
+        )
+
+    monkeypatch.setattr("backend.routes.videos.transcribe_api", fake_transcribe)
+
+    response = client.post("/api/videos/abc123/transcribe", json={"method": "api"})
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["video_id"] == "abc123"
+    assert body["status"] == "pending"
+
+    status_response = client.get("/api/videos/abc123/transcription/status")
+    assert status_response.status_code == 200
+    assert status_response.json() == {"status": "done", "error": None}
+
+    transcript_response = client.get("/api/videos/abc123/transcript")
+    assert transcript_response.status_code == 200
+    transcript_body = transcript_response.json()
+    assert transcript_body["text"] == "hello world"
+    assert transcript_body["method"] == "api"
+    assert transcript_body["segments"] == [{"start": 0.0, "end": 1.5, "text": "hello world"}]
+
+    saved = (tmp_path / "videos" / "abc123" / "transcript.json").read_text()
+    assert '"method":"api"' in saved.replace(" ", "").replace("\n", "")
+
+
+def test_transcribe_local_method_returns_400(tmp_path):
+    _write_video(tmp_path, "abc123")
+
+    response = client.post("/api/videos/abc123/transcribe", json={"method": "local"})
+
+    assert response.status_code == 400
+
+
+def test_transcribe_failure_sets_error_status(monkeypatch, tmp_path):
+    _write_video(tmp_path, "abc123")
+
+    def fake_transcribe(audio_path):
+        raise RuntimeError("api boom")
+
+    monkeypatch.setattr("backend.routes.videos.transcribe_api", fake_transcribe)
+
+    response = client.post("/api/videos/abc123/transcribe", json={"method": "api"})
+    assert response.status_code == 200
+
+    status_response = client.get("/api/videos/abc123/transcription/status")
+    assert status_response.status_code == 200
+    assert status_response.json()["status"] == "error"
+    assert "api boom" in status_response.json()["error"]
+
+
+def test_transcribe_unknown_video_id_returns_404():
+    response = client.post("/api/videos/does-not-exist/transcribe", json={"method": "api"})
+
+    assert response.status_code == 404
+
+
+def test_get_transcription_status_unknown_video_id_returns_404():
+    response = client.get("/api/videos/does-not-exist/transcription/status")
+
+    assert response.status_code == 404
+
+
+def test_get_transcript_unknown_video_id_returns_404():
+    response = client.get("/api/videos/does-not-exist/transcript")
+
+    assert response.status_code == 404

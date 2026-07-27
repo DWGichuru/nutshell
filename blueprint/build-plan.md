@@ -37,14 +37,8 @@ Sequential checklist for building the app. Each phase builds on the previous one
 - [x] Test: trim a sample audio file and confirm output matches selected range
 
 ## Phase 4: Transcription (Local + API)
-- [ ] Design a common transcription adapter interface (e.g. `transcribe(audio_path, method) -> {text, segments}`)
-- [ ] Install and configure `mlx-whisper`, implement local adapter
-- [ ] Implement OpenAI Whisper API adapter (uses key from `.env`)
-- [ ] Build UI method picker: Local vs API, with a cost note shown for API
-- [ ] Build endpoint that triggers transcription on the trimmed audio using the selected method
-- [ ] Save result as `transcript.json` in the video's folder, including which method was used
-- [ ] Add progress/status indicator for transcription in the UI (method-aware: local processing vs API upload/wait)
-- [ ] Test: transcribe a known clip with both methods, compare accuracy/timestamp alignment and confirm correct method is recorded
+- [x] 4a. API transcription path - adapter interface, OpenAI Whisper API adapter, endpoint, method-aware progress status, `transcript.json` save, method picker UI showing API as the working option
+- [ ] 4b. Local transcription path - `mlx-whisper` local adapter, enable Local in the method picker, local-specific progress handling, test comparing both methods' output and recorded method
 
 ## Phase 5: AI Summarization
 - [ ] Design adapter interface for summarization providers (e.g. `summarize(transcript, format, api_key)`)

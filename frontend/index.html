@@ -99,6 +99,30 @@
           <p id="trim-status" class="mt-3 text-sm text-warm-gray"></p>
           <p id="trim-error" class="mt-3 text-sm text-rust hidden"></p>
         </section>
+
+        <section id="transcribe-section" class="hidden rounded-lg bg-ivory p-6 dark:bg-near-black dark:border dark:border-warm-gray/30">
+          <h2 class="mb-4 font-serif text-xl font-semibold">Transcribe</h2>
+          <fieldset class="flex items-center gap-6">
+            <legend class="sr-only">Transcription method</legend>
+            <label class="flex items-center gap-2">
+              <input type="radio" name="transcription-method" value="api" checked />
+              API (OpenAI Whisper) - costs per minute of audio
+            </label>
+            <label class="flex items-center gap-2 text-warm-gray">
+              <input type="radio" name="transcription-method" value="local" disabled />
+              Local (mlx-whisper) - coming soon
+            </label>
+          </fieldset>
+          <button
+            id="transcribe-button"
+            class="mt-4 rounded bg-terracotta px-4 py-2 font-medium text-cream hover:bg-terracotta-dark disabled:opacity-50"
+          >
+            Transcribe
+          </button>
+          <p id="transcribe-status" class="mt-3 text-sm text-warm-gray"></p>
+          <p id="transcribe-error" class="mt-3 text-sm text-rust hidden"></p>
+          <pre id="transcript-display" class="mt-4 hidden whitespace-pre-wrap rounded bg-cream p-4 text-sm dark:bg-espresso/40"></pre>
+        </section>
       </main>
     </div>
 

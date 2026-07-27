@@ -2,5 +2,6 @@ fastapi
 uvicorn[standard]
 yt-dlp
 python-dotenv
+openai
 pytest
 httpx

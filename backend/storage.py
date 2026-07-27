@@ -1,7 +1,7 @@
 from pathlib import Path
 from typing import Any
 
-from backend.models import VideoMeta
+from backend.models import Transcript, VideoMeta
 
 DATA_ROOT = Path("data/videos")
 
@@ -28,3 +28,16 @@ def write_meta(video_id: str, meta: VideoMeta) -> None:
 def read_meta(video_id: str) -> VideoMeta:
     meta_path = DATA_ROOT / video_id / "meta.json"
     return VideoMeta.model_validate_json(meta_path.read_text())
+
+
+def transcript_path(video_id: str) -> Path:
+    return DATA_ROOT / video_id / "transcript.json"
+
+
+def write_transcript(video_id: str, transcript: Transcript) -> None:
+    path = transcript_path(video_id)
+    path.write_text(transcript.model_dump_json(indent=2))
+
+
+def read_transcript(video_id: str) -> Transcript:
+    return Transcript.model_validate_json(transcript_path(video_id).read_text())
