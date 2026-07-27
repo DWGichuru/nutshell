@@ -245,6 +245,15 @@ def test_trim_end_exceeds_duration_returns_400(tmp_path):
     assert response.status_code == 400
 
 
+def test_trim_too_short_returns_400(tmp_path):
+    _write_video(tmp_path, "abc123", duration_seconds=30)
+
+    response = client.post("/api/videos/abc123/trim", json={"start_seconds": 5.0, "end_seconds": 5.3})
+
+    assert response.status_code == 400
+    assert response.json()["detail"] == "Trim range must be at least 1 second."
+
+
 def test_trim_unknown_video_id_returns_404():
     response = client.post("/api/videos/does-not-exist/trim", json={"start_seconds": 0.0, "end_seconds": 10.0})
 

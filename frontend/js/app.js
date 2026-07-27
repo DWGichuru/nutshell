@@ -288,9 +288,14 @@ async function showTranscript(videoId) {
     return;
   }
   const body = await response.json();
-  transcriptDisplayEl.textContent = body.text;
+  const isEmpty = body.text.trim() === "";
+  transcriptDisplayEl.textContent = isEmpty ? "No speech detected in this clip." : body.text;
   transcriptDisplayEl.classList.remove("hidden");
 
+  if (isEmpty) {
+    summarizeSection.classList.add("hidden");
+    return;
+  }
   summarizeSection.classList.remove("hidden");
   summarizeSection.dataset.videoId = videoId;
 }
@@ -509,7 +514,8 @@ async function selectLibraryVideo(videoId) {
     if (transcriptResponse.ok) {
       const transcript = await transcriptResponse.json();
       if (videoId !== currentLibraryVideoId) return;
-      libraryTranscriptDisplayEl.textContent = transcript.text;
+      libraryTranscriptDisplayEl.textContent =
+        transcript.text.trim() === "" ? "No speech detected in this clip." : transcript.text;
     } else {
       libraryTranscriptDisplayEl.textContent = "No transcript yet for this video.";
     }

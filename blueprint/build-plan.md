@@ -60,7 +60,7 @@ Sequential checklist for building the app. Each phase builds on the previous one
 
 ## Phase 7: Polish & Edge Cases
 - [x] Handle invalid/unreachable YouTube URLs gracefully
-- [ ] Handle very short clips / silence (transcription edge cases)
+- [x] Handle very short clips / silence (transcription edge cases)
 - [ ] Add loading states/spinners for download, transcription, and summarization steps
 - [ ] Confirm Tailwind styling is consistent across all views
 - [ ] Add basic error messages/toasts for failed API calls (e.g. missing/invalid API key)

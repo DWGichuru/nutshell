@@ -49,6 +49,7 @@ router = APIRouter(prefix="/api/videos", tags=["videos"])
 
 DURATION_WARNING_THRESHOLD_SECONDS = 3600
 TRANSCRIPTION_ESTIMATE_MULTIPLIER = 0.5
+MIN_TRIM_DURATION_SECONDS = 1.0
 
 _download_status: dict[str, dict[str, str | None]] = {}
 _transcription_status: dict[str, dict[str, str | None]] = {}
@@ -166,6 +167,8 @@ def trim_video_audio(video_id: str, request: TrimRequest) -> TrimResponse:
         raise HTTPException(status_code=400, detail="start_seconds must be >= 0 and less than end_seconds")
     if request.end_seconds > meta.duration_seconds:
         raise HTTPException(status_code=400, detail="end_seconds exceeds video duration")
+    if request.end_seconds - request.start_seconds < MIN_TRIM_DURATION_SECONDS:
+        raise HTTPException(status_code=400, detail="Trim range must be at least 1 second.")
 
     path = audio_path(video_id)
     if not path.exists():
