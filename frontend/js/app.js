@@ -17,6 +17,11 @@ const transcribeButton = document.getElementById("transcribe-button");
 const transcribeStatusEl = document.getElementById("transcribe-status");
 const transcribeErrorEl = document.getElementById("transcribe-error");
 const transcriptDisplayEl = document.getElementById("transcript-display");
+const summarizeSection = document.getElementById("summarize-section");
+const summarizeButton = document.getElementById("summarize-button");
+const summarizeStatusEl = document.getElementById("summarize-status");
+const summarizeErrorEl = document.getElementById("summarize-error");
+const summaryDisplayEl = document.getElementById("summary-display");
 
 const STATUS_POLL_INTERVAL_MS = 2000;
 const SKIP_SECONDS = 5;
@@ -263,6 +268,86 @@ async function showTranscript(videoId) {
   const body = await response.json();
   transcriptDisplayEl.textContent = body.text;
   transcriptDisplayEl.classList.remove("hidden");
+
+  summarizeSection.classList.remove("hidden");
+  summarizeSection.dataset.videoId = videoId;
+}
+
+function setSummarizeError(message) {
+  if (message) {
+    summarizeErrorEl.textContent = message;
+    summarizeErrorEl.classList.remove("hidden");
+  } else {
+    summarizeErrorEl.classList.add("hidden");
+    summarizeErrorEl.textContent = "";
+  }
+}
+
+async function pollSummarizationStatus(videoId) {
+  const response = await fetch(`/api/videos/${videoId}/summarization/status`);
+  if (!response.ok) {
+    throw new Error("Unable to check summarization status.");
+  }
+  const body = await response.json();
+
+  if (body.status === "done") {
+    summarizeStatusEl.textContent = "Summary complete.";
+    showLatestSummary(videoId);
+    summarizeButton.disabled = false;
+    return;
+  }
+  if (body.status === "error") {
+    setSummarizeError(body.error || "Summarization failed.");
+    summarizeStatusEl.textContent = "";
+    summarizeButton.disabled = false;
+    return;
+  }
+
+  summarizeStatusEl.textContent = `Status: ${body.status}...`;
+  setTimeout(() => pollSummarizationStatus(videoId), STATUS_POLL_INTERVAL_MS);
+}
+
+async function showLatestSummary(videoId) {
+  const response = await fetch(`/api/videos/${videoId}/summaries`);
+  if (!response.ok) {
+    setSummarizeError("Unable to load summary.");
+    return;
+  }
+  const body = await response.json();
+  const latest = body.summaries[0];
+  if (!latest) return;
+  summaryDisplayEl.textContent = latest.content;
+  summaryDisplayEl.classList.remove("hidden");
+}
+
+async function startSummarization() {
+  const videoId = summarizeSection.dataset.videoId;
+  const format = document.querySelector('input[name="summary-format"]:checked').value;
+  const provider = document.querySelector('input[name="summary-provider"]:checked').value;
+
+  setSummarizeError(null);
+  summarizeButton.disabled = true;
+  summarizeStatusEl.textContent = "Starting summarization...";
+  summaryDisplayEl.classList.add("hidden");
+
+  try {
+    const response = await fetch(`/api/videos/${videoId}/summarize`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ format, provider }),
+    });
+
+    if (!response.ok) {
+      const body = await response.json().catch(() => ({}));
+      throw new Error(body.detail || "Summarization request failed.");
+    }
+
+    pollSummarizationStatus(videoId);
+  } catch (err) {
+    setSummarizeError(err.message);
+    summarizeStatusEl.textContent = "";
+    summarizeButton.disabled = false;
+  }
 }
 
 async function startTranscription() {
@@ -301,3 +386,4 @@ playPauseButton.addEventListener("click", togglePlayPause);
 skipBackButton.addEventListener("click", skipBack);
 skipForwardButton.addEventListener("click", skipForward);
 transcribeButton.addEventListener("click", startTranscription);
+summarizeButton.addEventListener("click", startSummarization);

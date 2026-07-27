@@ -51,3 +51,49 @@ def test_write_and_read_transcript_round_trip():
 
     assert loaded == transcript
     assert (storage.DATA_ROOT / "abc123" / "transcript.json").exists()
+
+
+def test_write_and_list_summaries_newest_first():
+    storage.video_dir("abc123")
+
+    storage.write_summary("abc123", "paragraph", "# Paragraph summary")
+    storage.write_summary("abc123", "bullets", "# Bullets summary")
+
+    entries = storage.list_summaries("abc123")
+
+    assert len(entries) == 2
+    assert entries[0].created_at >= entries[1].created_at
+    formats = {entry.format for entry in entries}
+    assert formats == {"paragraph", "bullets"}
+    contents = {entry.format: entry.content for entry in entries}
+    assert contents["paragraph"] == "# Paragraph summary"
+    assert contents["bullets"] == "# Bullets summary"
+
+
+def test_write_summary_does_not_overwrite_other_formats():
+    storage.video_dir("abc123")
+
+    storage.write_summary("abc123", "paragraph", "first")
+    storage.write_summary("abc123", "chaptered", "second")
+
+    saved_files = list((storage.DATA_ROOT / "abc123" / "summaries").glob("*.md"))
+    assert len(saved_files) == 2
+
+
+def test_write_summary_same_format_does_not_overwrite():
+    storage.video_dir("abc123")
+
+    storage.write_summary("abc123", "paragraph", "first summary")
+    storage.write_summary("abc123", "paragraph", "second summary")
+
+    entries = storage.list_summaries("abc123")
+    assert len(entries) == 2
+    contents = {entry.content for entry in entries}
+    assert contents == {"first summary", "second summary"}
+
+
+def test_list_summaries_missing_directory_returns_empty_list_without_creating_it():
+    entries = storage.list_summaries("does-not-exist")
+
+    assert entries == []
+    assert not (storage.DATA_ROOT / "does-not-exist").exists()

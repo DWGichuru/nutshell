@@ -41,13 +41,13 @@ Sequential checklist for building the app. Each phase builds on the previous one
 - [x] 4b. Local transcription path - `mlx-whisper` local adapter, enable Local in the method picker, local-specific progress handling, test comparing both methods' output and recorded method
 
 ## Phase 5: AI Summarization
-- [ ] Design adapter interface for summarization providers (e.g. `summarize(transcript, format, api_key)`)
-- [ ] Implement adapter for at least one provider (e.g. Anthropic)
-- [ ] Load API key from `.env` via `python-dotenv`
-- [ ] Build format picker in UI: paragraph / bullet points / chaptered
-- [ ] Build endpoint to generate summary given transcript + selected format
-- [ ] Save summary output to `data/videos/{video_id}/summaries/{timestamp}_{format}.md`
-- [ ] Test: generate all three formats for a sample transcript, confirm output quality and file saving
+- [x] Design adapter interface for summarization providers (e.g. `summarize(transcript, format, api_key)`)
+- [x] Implement adapter for at least one provider (e.g. Anthropic)
+- [x] Load API key from `.env` via `python-dotenv`
+- [x] Build format picker in UI: paragraph / bullet points / chaptered
+- [x] Build endpoint to generate summary given transcript + selected format
+- [x] Save summary output to `data/videos/{video_id}/summaries/{timestamp}_{format}.md`
+- [x] Test: generate all three formats for a sample transcript, confirm output quality and file saving
 
 ## Phase 6: Library View (Search/Filter)
 - [ ] Build endpoint to list all videos from the SQLite index

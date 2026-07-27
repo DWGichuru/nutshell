@@ -68,3 +68,28 @@ class TranscriptionStartedResponse(BaseModel):
 class TranscriptionStatusResponse(BaseModel):
     status: str
     error: str | None = None
+
+
+class SummarizeRequest(BaseModel):
+    format: Literal["paragraph", "bullets", "chaptered"]
+    provider: Literal["anthropic", "openai"] = "anthropic"
+
+
+class SummarizationStartedResponse(BaseModel):
+    video_id: str
+    status: str
+
+
+class SummarizationStatusResponse(BaseModel):
+    status: str
+    error: str | None = None
+
+
+class SummaryEntryModel(BaseModel):
+    format: str
+    created_at: str
+    content: str
+
+
+class SummaryListResponse(BaseModel):
+    summaries: list[SummaryEntryModel]

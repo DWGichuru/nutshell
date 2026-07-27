@@ -6,4 +6,4 @@
 > Build one thing at a time; `/complete` archives it under
 > `blueprint/history/` and resets this file.
 
-_Nothing in progress. Run `/feature`, `/fix`, or `/rollback` to start._
+_Nothing in progress._

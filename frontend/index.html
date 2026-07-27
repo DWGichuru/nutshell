@@ -123,6 +123,45 @@
           <p id="transcribe-error" class="mt-3 text-sm text-rust hidden"></p>
           <pre id="transcript-display" class="mt-4 hidden whitespace-pre-wrap rounded bg-cream p-4 text-sm dark:bg-espresso/40"></pre>
         </section>
+
+        <section id="summarize-section" class="hidden rounded-lg bg-ivory p-6 dark:bg-near-black dark:border dark:border-warm-gray/30">
+          <h2 class="mb-4 font-serif text-xl font-semibold">Summarize</h2>
+          <fieldset class="mb-4 flex items-center gap-6">
+            <legend class="sr-only">Summary provider</legend>
+            <label class="flex items-center gap-2">
+              <input type="radio" name="summary-provider" value="anthropic" checked />
+              Anthropic (Claude)
+            </label>
+            <label class="flex items-center gap-2">
+              <input type="radio" name="summary-provider" value="openai" />
+              OpenAI
+            </label>
+          </fieldset>
+          <fieldset class="flex items-center gap-6">
+            <legend class="sr-only">Summary format</legend>
+            <label class="flex items-center gap-2">
+              <input type="radio" name="summary-format" value="paragraph" checked />
+              Paragraph
+            </label>
+            <label class="flex items-center gap-2">
+              <input type="radio" name="summary-format" value="bullets" />
+              Bullet points
+            </label>
+            <label class="flex items-center gap-2">
+              <input type="radio" name="summary-format" value="chaptered" />
+              Chaptered
+            </label>
+          </fieldset>
+          <button
+            id="summarize-button"
+            class="mt-4 rounded bg-terracotta px-4 py-2 font-medium text-cream hover:bg-terracotta-dark disabled:opacity-50"
+          >
+            Summarize
+          </button>
+          <p id="summarize-status" class="mt-3 text-sm text-warm-gray"></p>
+          <p id="summarize-error" class="mt-3 text-sm text-rust hidden"></p>
+          <pre id="summary-display" class="mt-4 hidden whitespace-pre-wrap rounded bg-cream p-4 text-sm dark:bg-espresso/40"></pre>
+        </section>
       </main>
     </div>
 

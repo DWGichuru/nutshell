@@ -348,3 +348,101 @@ def test_get_transcript_unknown_video_id_returns_404():
     response = client.get("/api/videos/does-not-exist/transcript")
 
     assert response.status_code == 404
+
+
+def _write_transcript(tmp_path, video_id, text="hello world"):
+    video_dir = tmp_path / "videos" / video_id
+    video_dir.mkdir(parents=True, exist_ok=True)
+    transcript = {
+        "text": text,
+        "segments": [{"start": 0.0, "end": 1.5, "text": text}],
+        "method": "api",
+    }
+    (video_dir / "transcript.json").write_text(json.dumps(transcript))
+
+
+def test_summarize_success(monkeypatch, tmp_path):
+    _write_video(tmp_path, "abc123")
+    _write_transcript(tmp_path, "abc123")
+
+    def fake_summarize(input, format):
+        return f"# {format} summary"
+
+    monkeypatch.setattr("backend.routes.videos.summarize_anthropic", fake_summarize)
+
+    response = client.post("/api/videos/abc123/summarize", json={"format": "bullets"})
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["video_id"] == "abc123"
+    assert body["status"] == "pending"
+
+    status_response = client.get("/api/videos/abc123/summarization/status")
+    assert status_response.status_code == 200
+    assert status_response.json() == {"status": "done", "error": None}
+
+    list_response = client.get("/api/videos/abc123/summaries")
+    assert list_response.status_code == 200
+    summaries = list_response.json()["summaries"]
+    assert len(summaries) == 1
+    assert summaries[0]["format"] == "bullets"
+    assert summaries[0]["content"] == "# bullets summary"
+
+
+def test_summarize_openai_provider_success(monkeypatch, tmp_path):
+    _write_video(tmp_path, "abc123")
+    _write_transcript(tmp_path, "abc123")
+
+    def fake_summarize(input, format):
+        return f"# openai {format} summary"
+
+    monkeypatch.setattr("backend.routes.videos.summarize_openai", fake_summarize)
+
+    response = client.post("/api/videos/abc123/summarize", json={"format": "paragraph", "provider": "openai"})
+
+    assert response.status_code == 200
+
+    status_response = client.get("/api/videos/abc123/summarization/status")
+    assert status_response.json() == {"status": "done", "error": None}
+
+    list_response = client.get("/api/videos/abc123/summaries")
+    summaries = list_response.json()["summaries"]
+    assert summaries[0]["content"] == "# openai paragraph summary"
+
+
+def test_summarize_unknown_transcript_returns_404(tmp_path):
+    _write_video(tmp_path, "abc123")
+
+    response = client.post("/api/videos/abc123/summarize", json={"format": "paragraph"})
+
+    assert response.status_code == 404
+
+
+def test_summarize_failure_sets_error_status(monkeypatch, tmp_path):
+    _write_video(tmp_path, "abc123")
+    _write_transcript(tmp_path, "abc123")
+
+    def fake_summarize(input, format):
+        raise RuntimeError("anthropic boom")
+
+    monkeypatch.setattr("backend.routes.videos.summarize_anthropic", fake_summarize)
+
+    response = client.post("/api/videos/abc123/summarize", json={"format": "paragraph"})
+    assert response.status_code == 200
+
+    status_response = client.get("/api/videos/abc123/summarization/status")
+    assert status_response.status_code == 200
+    assert status_response.json()["status"] == "error"
+    assert "anthropic boom" in status_response.json()["error"]
+
+
+def test_get_summarization_status_unknown_video_id_returns_404():
+    response = client.get("/api/videos/does-not-exist/summarization/status")
+
+    assert response.status_code == 404
+
+
+def test_get_summaries_unknown_video_id_returns_404():
+    response = client.get("/api/videos/does-not-exist/summaries")
+
+    assert response.status_code == 404

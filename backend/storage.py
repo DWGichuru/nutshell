@@ -1,9 +1,12 @@
+from dataclasses import dataclass
+from datetime import UTC, datetime
 from pathlib import Path
 from typing import Any
 
 from backend.models import Transcript, VideoMeta
 
 DATA_ROOT = Path("data/videos")
+SUMMARY_TIMESTAMP_FORMAT = "%Y%m%dT%H%M%S%fZ"
 
 
 def derive_video_id(info: dict[str, Any]) -> str:
@@ -41,3 +44,35 @@ def write_transcript(video_id: str, transcript: Transcript) -> None:
 
 def read_transcript(video_id: str) -> Transcript:
     return Transcript.model_validate_json(transcript_path(video_id).read_text())
+
+
+@dataclass
+class SummaryEntry:
+    format: str
+    created_at: str
+    content: str
+
+
+def summaries_dir(video_id: str) -> Path:
+    path = DATA_ROOT / video_id / "summaries"
+    path.mkdir(parents=True, exist_ok=True)
+    return path
+
+
+def write_summary(video_id: str, format: str, content: str) -> Path:
+    timestamp = datetime.now(UTC).strftime(SUMMARY_TIMESTAMP_FORMAT)
+    path = summaries_dir(video_id) / f"{timestamp}_{format}.md"
+    path.write_text(content)
+    return path
+
+
+def list_summaries(video_id: str) -> list[SummaryEntry]:
+    dir_path = DATA_ROOT / video_id / "summaries"
+    entries = []
+    for path in dir_path.glob("*.md"):
+        timestamp, _, format_with_ext = path.stem.partition("_")
+        entries.append(
+            SummaryEntry(format=format_with_ext, created_at=timestamp, content=path.read_text())
+        )
+    entries.sort(key=lambda entry: entry.created_at, reverse=True)
+    return entries

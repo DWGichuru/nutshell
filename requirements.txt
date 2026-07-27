@@ -3,6 +3,7 @@ uvicorn[standard]
 yt-dlp
 python-dotenv
 openai
+anthropic
 mlx-whisper
 pytest
 httpx
