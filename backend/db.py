@@ -56,6 +56,43 @@ def upsert_video(meta: VideoMeta, path: Path, db_path: Path | None = None) -> No
         conn.close()
 
 
+def list_videos(
+    search: str | None = None,
+    date_from: str | None = None,
+    date_to: str | None = None,
+    db_path: Path | None = None,
+) -> list[tuple[str, str, str, int, str, str]]:
+    query = "SELECT video_id, title, channel, duration_seconds, date_added, path FROM videos"
+    clauses = []
+    params: list[str] = []
+
+    if search:
+        clauses.append("(title LIKE ? ESCAPE '\\' OR channel LIKE ? ESCAPE '\\')")
+        pattern = f"%{_escape_like(search)}%"
+        params.extend([pattern, pattern])
+    if date_from:
+        clauses.append("date_added >= ?")
+        params.append(date_from)
+    if date_to:
+        clauses.append("date_added <= ?")
+        params.append(date_to)
+
+    if clauses:
+        query += " WHERE " + " AND ".join(clauses)
+    query += " ORDER BY date_added DESC"
+
+    conn = get_connection(db_path)
+    try:
+        rows = conn.execute(query, params).fetchall()
+    finally:
+        conn.close()
+    return rows
+
+
+def _escape_like(value: str) -> str:
+    return value.replace("\\", "\\\\").replace("%", "\\%").replace("_", "\\_")
+
+
 def rebuild_index(data_root: Path | None = None, db_path: Path | None = None) -> int:
     if data_root is None:
         data_root = storage.DATA_ROOT

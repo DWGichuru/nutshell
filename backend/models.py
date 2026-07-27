@@ -93,3 +93,15 @@ class SummaryEntryModel(BaseModel):
 
 class SummaryListResponse(BaseModel):
     summaries: list[SummaryEntryModel]
+
+
+class VideoSummaryModel(BaseModel):
+    video_id: str
+    title: str
+    channel: str
+    duration_seconds: int
+    date_added: str
+
+
+class VideoListResponse(BaseModel):
+    videos: list[VideoSummaryModel]

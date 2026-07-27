@@ -10,7 +10,7 @@ from backend.adapters.summarization.openai_api import summarize as summarize_ope
 from backend.adapters.transcription.base import TranscriptSegment
 from backend.adapters.transcription.local_mlx import transcribe as transcribe_local
 from backend.adapters.transcription.openai_api import transcribe as transcribe_api
-from backend.db import upsert_video
+from backend.db import list_videos, upsert_video
 from backend.models import (
     DownloadStartedResponse,
     DownloadStatusResponse,
@@ -27,8 +27,10 @@ from backend.models import (
     TranscriptSegmentModel,
     TrimRequest,
     TrimResponse,
+    VideoListResponse,
     VideoMeta,
     VideoMetadataResponse,
+    VideoSummaryModel,
 )
 from backend.storage import (
     audio_path,
@@ -58,6 +60,29 @@ def estimate_transcription(duration_seconds: int) -> tuple[bool, float | None]:
         return False, None
     estimated_minutes = round(duration_seconds * TRANSCRIPTION_ESTIMATE_MULTIPLIER / 60, 1)
     return True, estimated_minutes
+
+
+@router.get("", response_model=VideoListResponse)
+def get_videos(
+    search: str | None = None, date_from: str | None = None, date_to: str | None = None
+) -> VideoListResponse:
+    rows = list_videos(search=search, date_from=date_from, date_to=date_to)
+    return VideoListResponse(
+        videos=[
+            VideoSummaryModel(
+                video_id=row[0], title=row[1], channel=row[2], duration_seconds=row[3], date_added=row[4]
+            )
+            for row in rows
+        ]
+    )
+
+
+@router.get("/{video_id}", response_model=VideoMeta)
+def get_video(video_id: str) -> VideoMeta:
+    try:
+        return read_meta(video_id)
+    except FileNotFoundError as exc:
+        raise HTTPException(status_code=404, detail="Unknown video_id") from exc
 
 
 @router.post("/metadata", response_model=VideoMetadataResponse)

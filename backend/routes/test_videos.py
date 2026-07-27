@@ -5,6 +5,7 @@ from fastapi.testclient import TestClient
 
 from backend import db, storage
 from backend.main import app
+from backend.models import VideoMeta
 from backend.routes.videos import estimate_transcription
 from backend.youtube import YouTubeError
 
@@ -444,5 +445,72 @@ def test_get_summarization_status_unknown_video_id_returns_404():
 
 def test_get_summaries_unknown_video_id_returns_404():
     response = client.get("/api/videos/does-not-exist/summaries")
+
+    assert response.status_code == 404
+
+
+def _seed_video(tmp_path, video_id, **overrides):
+    video_dir = _write_video(tmp_path, video_id)
+    meta_dict = json.loads((video_dir / "meta.json").read_text())
+    meta_dict.update(overrides)
+    (video_dir / "meta.json").write_text(json.dumps(meta_dict))
+    meta = VideoMeta(**meta_dict)
+    db.upsert_video(meta, video_dir)
+    return meta
+
+
+def test_get_videos_returns_empty_list_when_no_videos():
+    response = client.get("/api/videos")
+
+    assert response.status_code == 200
+    assert response.json() == {"videos": []}
+
+
+def test_get_videos_returns_all_videos(tmp_path):
+    _seed_video(tmp_path, "abc123", title="First")
+    _seed_video(tmp_path, "def456", title="Second")
+
+    response = client.get("/api/videos")
+
+    assert response.status_code == 200
+    video_ids = {video["video_id"] for video in response.json()["videos"]}
+    assert video_ids == {"abc123", "def456"}
+
+
+def test_get_videos_search_filters_by_title(tmp_path):
+    _seed_video(tmp_path, "abc123", title="Deep Dive Into Rust")
+    _seed_video(tmp_path, "def456", title="Cooking Basics")
+
+    response = client.get("/api/videos", params={"search": "rust"})
+
+    assert response.status_code == 200
+    videos = response.json()["videos"]
+    assert [video["video_id"] for video in videos] == ["abc123"]
+
+
+def test_get_videos_date_range_filters_results(tmp_path):
+    _seed_video(tmp_path, "jan", date_added="2026-01-15T00:00:00+00:00")
+    _seed_video(tmp_path, "jun", date_added="2026-06-15T00:00:00+00:00")
+
+    response = client.get("/api/videos", params={"date_from": "2026-05-01"})
+
+    assert response.status_code == 200
+    videos = response.json()["videos"]
+    assert [video["video_id"] for video in videos] == ["jun"]
+
+
+def test_get_video_returns_meta(tmp_path):
+    _seed_video(tmp_path, "abc123", title="Some Title")
+
+    response = client.get("/api/videos/abc123")
+
+    assert response.status_code == 200
+    body = response.json()
+    assert body["video_id"] == "abc123"
+    assert body["title"] == "Some Title"
+
+
+def test_get_video_unknown_video_id_returns_404():
+    response = client.get("/api/videos/does-not-exist")
 
     assert response.status_code == 404

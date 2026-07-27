@@ -50,13 +50,13 @@ Sequential checklist for building the app. Each phase builds on the previous one
 - [x] Test: generate all three formats for a sample transcript, confirm output quality and file saving
 
 ## Phase 6: Library View (Search/Filter)
-- [ ] Build endpoint to list all videos from the SQLite index
-- [ ] Build search/filter endpoint (by title/channel substring, date range)
-- [ ] Build frontend library view: list of past videos with title/channel/date
-- [ ] Add search/filter input UI, wired to the filter endpoint
-- [ ] Implement "select video" flow: load its `meta.json`, `transcript.json`, and past summaries
-- [ ] Allow generating a new summary format from the library view without re-downloading or re-transcribing
-- [ ] Test: search across multiple videos, confirm correct filtering and reload behavior
+- [x] Build endpoint to list all videos from the SQLite index
+- [x] Build search/filter endpoint (by title/channel substring, date range)
+- [x] Build frontend library view: list of past videos with title/channel/date
+- [x] Add search/filter input UI, wired to the filter endpoint
+- [x] Implement "select video" flow: load its `meta.json`, `transcript.json`, and past summaries
+- [x] Allow generating a new summary format from the library view without re-downloading or re-transcribing
+- [x] Test: search across multiple videos, confirm correct filtering and reload behavior
 
 ## Phase 7: Polish & Edge Cases
 - [ ] Handle invalid/unreachable YouTube URLs gracefully

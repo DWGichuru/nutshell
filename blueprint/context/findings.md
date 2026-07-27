@@ -43,3 +43,23 @@ already calls out "never trust a client-supplied file path."
 every path-building function. Best done as one cross-cutting hardening pass
 covering all existing endpoints, not scoped to this feature alone.
 **Resolution:**
+
+### F-05 [P2] open - Frontend has six near-identical error-setter/status-poller function pairs, one per section
+
+**File:** frontend/js/app.js:44
+**Found:** 2026-07-27 by /autopilot audit (scope: current)
+**Why it matters:** `setError`/`setTrimError`/`setTranscribeError`/
+`setSummarizeError` already existed as four copies of the same
+show/hide-message pattern; this feature's library view added
+`setLibraryError`/`setLibrarySummarizeError` as a fifth and sixth copy,
+following the existing (already duplicated) convention rather than
+introducing new duplication on its own. The same applies to
+`pollDownloadStatus`/`pollTranscriptionStatus`/`pollSummarizationStatus`/
+`pollLibrarySummarizationStatus` - four near-identical pending -> done/error
+polling loops. Six-plus copies is well past the "rule of three" threshold.
+**Suggested fix:** Extract a shared `setFieldError(el, message)` helper and a
+generic `pollStatus(url, { onDone, onError, intervalMs })` helper, used by all
+sections. Out of scope for this feature since fixing it well means touching
+the pre-existing download/trim/transcribe/summarize code paths too, not just
+the new library code.
+**Resolution:**

@@ -23,11 +23,33 @@ const summarizeStatusEl = document.getElementById("summarize-status");
 const summarizeErrorEl = document.getElementById("summarize-error");
 const summaryDisplayEl = document.getElementById("summary-display");
 
+const navNewSummaryButton = document.getElementById("nav-new-summary");
+const navLibraryButton = document.getElementById("nav-library");
+const newSummaryView = document.getElementById("new-summary-view");
+const libraryView = document.getElementById("library-view");
+const librarySearchInput = document.getElementById("library-search");
+const libraryDateFromInput = document.getElementById("library-date-from");
+const libraryDateToInput = document.getElementById("library-date-to");
+const libraryFilterButton = document.getElementById("library-filter-button");
+const libraryErrorEl = document.getElementById("library-error");
+const libraryResultsEl = document.getElementById("library-results");
+const libraryDetailSection = document.getElementById("library-detail-section");
+const libraryDetailTitleEl = document.getElementById("library-detail-title");
+const libraryDetailMetaEl = document.getElementById("library-detail-meta");
+const libraryTranscriptDisplayEl = document.getElementById("library-transcript-display");
+const librarySummariesEl = document.getElementById("library-summaries");
+const librarySummarizeButton = document.getElementById("library-summarize-button");
+const librarySummarizeStatusEl = document.getElementById("library-summarize-status");
+const librarySummarizeErrorEl = document.getElementById("library-summarize-error");
+
 const STATUS_POLL_INTERVAL_MS = 2000;
 const SKIP_SECONDS = 5;
+const ACTIVE_NAV_CLASSES = ["bg-terracotta", "text-cream", "hover:bg-terracotta-dark"];
+const INACTIVE_NAV_CLASSES = ["bg-ivory", "text-espresso", "hover:bg-warm-gray/30"];
 
 let wavesurfer = null;
 let activeRegion = null;
+let currentLibraryVideoId = null;
 
 function formatTime(seconds) {
   const total = Math.max(0, Math.round(seconds));
@@ -377,6 +399,231 @@ async function startTranscription() {
     transcribeStatusEl.textContent = "";
     transcribeButton.disabled = false;
   }
+}
+
+function formatDate(isoString) {
+  const date = new Date(isoString);
+  if (Number.isNaN(date.getTime())) return isoString;
+  return date.toLocaleDateString();
+}
+
+function showNewSummaryView() {
+  newSummaryView.classList.remove("hidden");
+  libraryView.classList.add("hidden");
+  navNewSummaryButton.classList.add(...ACTIVE_NAV_CLASSES);
+  navNewSummaryButton.classList.remove(...INACTIVE_NAV_CLASSES);
+  navLibraryButton.classList.add(...INACTIVE_NAV_CLASSES);
+  navLibraryButton.classList.remove(...ACTIVE_NAV_CLASSES);
+}
+
+function showLibraryView() {
+  libraryView.classList.remove("hidden");
+  newSummaryView.classList.add("hidden");
+  navLibraryButton.classList.add(...ACTIVE_NAV_CLASSES);
+  navLibraryButton.classList.remove(...INACTIVE_NAV_CLASSES);
+  navNewSummaryButton.classList.add(...INACTIVE_NAV_CLASSES);
+  navNewSummaryButton.classList.remove(...ACTIVE_NAV_CLASSES);
+  fetchVideos();
+}
+
+function setLibraryError(message) {
+  if (message) {
+    libraryErrorEl.textContent = message;
+    libraryErrorEl.classList.remove("hidden");
+  } else {
+    libraryErrorEl.classList.add("hidden");
+    libraryErrorEl.textContent = "";
+  }
+}
+
+async function fetchVideos() {
+  setLibraryError(null);
+  const params = new URLSearchParams();
+  const search = librarySearchInput.value.trim();
+  const dateFrom = libraryDateFromInput.value;
+  const dateTo = libraryDateToInput.value;
+  if (search) params.set("search", search);
+  if (dateFrom) params.set("date_from", dateFrom);
+  if (dateTo) params.set("date_to", dateTo);
+
+  try {
+    const response = await fetch(`/api/videos?${params.toString()}`);
+    if (!response.ok) {
+      throw new Error("Unable to load videos.");
+    }
+    const body = await response.json();
+    renderLibraryResults(body.videos);
+  } catch (err) {
+    setLibraryError(err.message);
+  }
+}
+
+function renderLibraryResults(videos) {
+  libraryResultsEl.innerHTML = "";
+
+  if (videos.length === 0) {
+    const empty = document.createElement("li");
+    empty.className = "py-3 text-sm text-warm-gray";
+    empty.textContent = "No videos found.";
+    libraryResultsEl.appendChild(empty);
+    return;
+  }
+
+  for (const video of videos) {
+    const item = document.createElement("li");
+    item.className = "py-3";
+
+    const button = document.createElement("button");
+    button.className = "w-full text-left hover:text-terracotta";
+    button.innerHTML = `
+      <span class="font-medium">${video.title}</span>
+      <span class="block text-sm text-warm-gray">${video.channel} - ${formatDate(video.date_added)}</span>
+    `;
+    button.addEventListener("click", () => selectLibraryVideo(video.video_id));
+
+    item.appendChild(button);
+    libraryResultsEl.appendChild(item);
+  }
+}
+
+async function selectLibraryVideo(videoId) {
+  setLibraryError(null);
+  currentLibraryVideoId = videoId;
+
+  try {
+    const metaResponse = await fetch(`/api/videos/${videoId}`);
+    if (videoId !== currentLibraryVideoId) return;
+    if (!metaResponse.ok) {
+      throw new Error("Unable to load video.");
+    }
+    const meta = await metaResponse.json();
+    if (videoId !== currentLibraryVideoId) return;
+
+    libraryDetailSection.classList.remove("hidden");
+    libraryDetailSection.dataset.videoId = videoId;
+    libraryDetailTitleEl.textContent = meta.title;
+    libraryDetailMetaEl.textContent = `${meta.channel} - ${formatDate(meta.date_added)}`;
+
+    const transcriptResponse = await fetch(`/api/videos/${videoId}/transcript`);
+    if (videoId !== currentLibraryVideoId) return;
+    if (transcriptResponse.ok) {
+      const transcript = await transcriptResponse.json();
+      if (videoId !== currentLibraryVideoId) return;
+      libraryTranscriptDisplayEl.textContent = transcript.text;
+    } else {
+      libraryTranscriptDisplayEl.textContent = "No transcript yet for this video.";
+    }
+
+    await showLibrarySummaries(videoId);
+  } catch (err) {
+    if (videoId === currentLibraryVideoId) setLibraryError(err.message);
+  }
+}
+
+async function showLibrarySummaries(videoId) {
+  const response = await fetch(`/api/videos/${videoId}/summaries`);
+  if (videoId !== currentLibraryVideoId) return;
+  librarySummariesEl.innerHTML = "";
+  if (!response.ok) return;
+
+  const body = await response.json();
+  if (videoId !== currentLibraryVideoId) return;
+  if (body.summaries.length === 0) {
+    const empty = document.createElement("p");
+    empty.className = "text-sm text-warm-gray";
+    empty.textContent = "No summaries yet.";
+    librarySummariesEl.appendChild(empty);
+    return;
+  }
+
+  for (const summary of body.summaries) {
+    const wrapper = document.createElement("div");
+    wrapper.className = "rounded bg-cream p-4 dark:bg-espresso/40";
+    const heading = document.createElement("p");
+    heading.className = "mb-2 text-sm font-medium text-terracotta";
+    heading.textContent = `${summary.format} - ${summary.created_at}`;
+    const content = document.createElement("pre");
+    content.className = "whitespace-pre-wrap text-sm";
+    content.textContent = summary.content;
+    wrapper.appendChild(heading);
+    wrapper.appendChild(content);
+    librarySummariesEl.appendChild(wrapper);
+  }
+}
+
+function setLibrarySummarizeError(message) {
+  if (message) {
+    librarySummarizeErrorEl.textContent = message;
+    librarySummarizeErrorEl.classList.remove("hidden");
+  } else {
+    librarySummarizeErrorEl.classList.add("hidden");
+    librarySummarizeErrorEl.textContent = "";
+  }
+}
+
+async function pollLibrarySummarizationStatus(videoId) {
+  const response = await fetch(`/api/videos/${videoId}/summarization/status`);
+  if (videoId !== currentLibraryVideoId) return;
+  if (!response.ok) {
+    throw new Error("Unable to check summarization status.");
+  }
+  const body = await response.json();
+  if (videoId !== currentLibraryVideoId) return;
+
+  if (body.status === "done") {
+    librarySummarizeStatusEl.textContent = "Summary complete.";
+    await showLibrarySummaries(videoId);
+    librarySummarizeButton.disabled = false;
+    return;
+  }
+  if (body.status === "error") {
+    setLibrarySummarizeError(body.error || "Summarization failed.");
+    librarySummarizeStatusEl.textContent = "";
+    librarySummarizeButton.disabled = false;
+    return;
+  }
+
+  librarySummarizeStatusEl.textContent = `Status: ${body.status}...`;
+  setTimeout(() => pollLibrarySummarizationStatus(videoId), STATUS_POLL_INTERVAL_MS);
+}
+
+async function startLibrarySummarization() {
+  const videoId = libraryDetailSection.dataset.videoId;
+  const format = document.querySelector('input[name="library-summary-format"]:checked').value;
+  const provider = document.querySelector('input[name="library-summary-provider"]:checked').value;
+
+  setLibrarySummarizeError(null);
+  librarySummarizeButton.disabled = true;
+  librarySummarizeStatusEl.textContent = "Starting summarization...";
+
+  try {
+    const response = await fetch(`/api/videos/${videoId}/summarize`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ format, provider }),
+    });
+
+    if (!response.ok) {
+      const body = await response.json().catch(() => ({}));
+      throw new Error(body.detail || "Summarization request failed.");
+    }
+
+    pollLibrarySummarizationStatus(videoId);
+  } catch (err) {
+    setLibrarySummarizeError(err.message);
+    librarySummarizeStatusEl.textContent = "";
+    librarySummarizeButton.disabled = false;
+  }
+}
+
+navNewSummaryButton.addEventListener("click", showNewSummaryView);
+navLibraryButton.addEventListener("click", showLibraryView);
+libraryFilterButton.addEventListener("click", fetchVideos);
+librarySummarizeButton.addEventListener("click", startLibrarySummarization);
+for (const input of [librarySearchInput, libraryDateFromInput, libraryDateToInput]) {
+  input.addEventListener("keydown", (event) => {
+    if (event.key === "Enter") fetchVideos();
+  });
 }
 
 downloadButton.addEventListener("click", startDownload);

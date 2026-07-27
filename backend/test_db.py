@@ -114,6 +114,114 @@ def test_rebuild_index_populates_from_meta_json_files(db_path, tmp_path):
     assert row[1] == "Second"
 
 
+def test_list_videos_returns_all_with_no_filters(db_path):
+    db.init_db(db_path)
+    db.upsert_video(make_meta("abc123", title="First"), Path("/data/videos/abc123"), db_path)
+    db.upsert_video(make_meta("def456", title="Second"), Path("/data/videos/def456"), db_path)
+
+    rows = db.list_videos(db_path=db_path)
+
+    assert {row[0] for row in rows} == {"abc123", "def456"}
+
+
+def test_list_videos_orders_by_date_added_descending(db_path):
+    db.init_db(db_path)
+    db.upsert_video(
+        make_meta("older", title="Older", date_added="2026-01-01T00:00:00+00:00"),
+        Path("/data/videos/older"),
+        db_path,
+    )
+    db.upsert_video(
+        make_meta("newer", title="Newer", date_added="2026-06-01T00:00:00+00:00"),
+        Path("/data/videos/newer"),
+        db_path,
+    )
+
+    rows = db.list_videos(db_path=db_path)
+
+    assert [row[0] for row in rows] == ["newer", "older"]
+
+
+def test_list_videos_search_matches_title(db_path):
+    db.init_db(db_path)
+    db.upsert_video(make_meta("abc123", title="Deep Dive Into Rust"), Path("/x"), db_path)
+    db.upsert_video(make_meta("def456", title="Cooking Basics"), Path("/y"), db_path)
+
+    rows = db.list_videos(search="rust", db_path=db_path)
+
+    assert [row[0] for row in rows] == ["abc123"]
+
+
+def test_list_videos_search_matches_channel(db_path):
+    db.init_db(db_path)
+    db.upsert_video(make_meta("abc123", title="Video A", channel="Tech Channel"), Path("/x"), db_path)
+    db.upsert_video(make_meta("def456", title="Video B", channel="Cooking Channel"), Path("/y"), db_path)
+
+    rows = db.list_videos(search="tech", db_path=db_path)
+
+    assert [row[0] for row in rows] == ["abc123"]
+
+
+def test_list_videos_search_is_case_insensitive(db_path):
+    db.init_db(db_path)
+    db.upsert_video(make_meta("abc123", title="UPPERCASE TITLE"), Path("/x"), db_path)
+
+    rows = db.list_videos(search="uppercase", db_path=db_path)
+
+    assert [row[0] for row in rows] == ["abc123"]
+
+
+def test_list_videos_search_escapes_like_wildcards(db_path):
+    db.init_db(db_path)
+    db.upsert_video(make_meta("abc123", title="100% Done"), Path("/x"), db_path)
+    db.upsert_video(make_meta("def456", title="Nothing Related"), Path("/y"), db_path)
+
+    rows = db.list_videos(search="100%", db_path=db_path)
+
+    assert [row[0] for row in rows] == ["abc123"]
+
+
+def test_list_videos_filters_by_date_range(db_path):
+    db.init_db(db_path)
+    db.upsert_video(
+        make_meta("jan", title="January", date_added="2026-01-15T00:00:00+00:00"),
+        Path("/x"),
+        db_path,
+    )
+    db.upsert_video(
+        make_meta("mar", title="March", date_added="2026-03-15T00:00:00+00:00"),
+        Path("/y"),
+        db_path,
+    )
+    db.upsert_video(
+        make_meta("jun", title="June", date_added="2026-06-15T00:00:00+00:00"),
+        Path("/z"),
+        db_path,
+    )
+
+    rows = db.list_videos(date_from="2026-02-01", date_to="2026-05-01", db_path=db_path)
+
+    assert [row[0] for row in rows] == ["mar"]
+
+
+def test_list_videos_combines_search_and_date_range(db_path):
+    db.init_db(db_path)
+    db.upsert_video(
+        make_meta("early", title="Rust Basics", date_added="2026-01-01T00:00:00+00:00"),
+        Path("/x"),
+        db_path,
+    )
+    db.upsert_video(
+        make_meta("late", title="Rust Advanced", date_added="2026-06-01T00:00:00+00:00"),
+        Path("/y"),
+        db_path,
+    )
+
+    rows = db.list_videos(search="rust", date_from="2026-05-01", db_path=db_path)
+
+    assert [row[0] for row in rows] == ["late"]
+
+
 def test_rebuild_index_drops_stale_rows_no_longer_on_disk(db_path, tmp_path):
     data_root = tmp_path / "videos"
     _write_meta_fixture(data_root, make_meta("abc123"))
