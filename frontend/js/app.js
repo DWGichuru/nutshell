@@ -26,6 +26,11 @@ const summarizeErrorEl = document.getElementById("summarize-error");
 const summarizeSpinnerEl = document.getElementById("summarize-spinner");
 const summaryDisplayEl = document.getElementById("summary-display");
 
+const aiPaneEmptyEl = document.getElementById("ai-pane-empty");
+const aiPaneContentEl = document.getElementById("ai-pane-content");
+const aiTabTranscriptButton = document.getElementById("ai-tab-transcript");
+const aiTabSummaryButton = document.getElementById("ai-tab-summary");
+
 const navNewSummaryButton = document.getElementById("nav-new-summary");
 const navLibraryButton = document.getElementById("nav-library");
 const newSummaryView = document.getElementById("new-summary-view");
@@ -49,11 +54,20 @@ const librarySummarizeSpinnerEl = document.getElementById("library-summarize-spi
 const STATUS_POLL_INTERVAL_MS = 2000;
 const SKIP_SECONDS = 5;
 const ACTIVE_NAV_CLASSES = ["bg-terracotta", "text-cream", "hover:bg-terracotta-dark"];
-const INACTIVE_NAV_CLASSES = ["bg-ivory", "text-espresso", "hover:bg-warm-gray/30"];
+const INACTIVE_NAV_CLASSES = [
+  "bg-ivory",
+  "text-espresso",
+  "hover:bg-warm-gray/30",
+  "dark:bg-espresso/60",
+  "dark:text-cream",
+];
+const AI_TAB_ACTIVE_CLASSES = ["bg-cream", "dark:bg-near-black", "text-terracotta"];
+const AI_TAB_INACTIVE_CLASSES = ["text-warm-gray", "hover:text-espresso", "dark:hover:text-cream"];
 
 let wavesurfer = null;
 let activeRegion = null;
 let currentLibraryVideoId = null;
+let activeAiTab = "transcript";
 
 function formatTime(seconds) {
   const total = Math.max(0, Math.round(seconds));
@@ -108,6 +122,22 @@ async function pollDownloadStatus(videoId) {
 
   setStatus(`Status: ${body.status}...`);
   setTimeout(() => pollDownloadStatus(videoId), STATUS_POLL_INTERVAL_MS);
+}
+
+function showAiPaneContent() {
+  aiPaneEmptyEl.classList.add("hidden");
+  aiPaneContentEl.classList.remove("hidden");
+}
+
+function setActiveAiTab(tab) {
+  activeAiTab = tab;
+  const isTranscript = tab === "transcript";
+  aiTabTranscriptButton.classList.remove(...AI_TAB_ACTIVE_CLASSES, ...AI_TAB_INACTIVE_CLASSES);
+  aiTabTranscriptButton.classList.add(...(isTranscript ? AI_TAB_ACTIVE_CLASSES : AI_TAB_INACTIVE_CLASSES));
+  aiTabSummaryButton.classList.remove(...AI_TAB_ACTIVE_CLASSES, ...AI_TAB_INACTIVE_CLASSES);
+  aiTabSummaryButton.classList.add(...(isTranscript ? AI_TAB_INACTIVE_CLASSES : AI_TAB_ACTIVE_CLASSES));
+  transcriptDisplayEl.classList.toggle("hidden", !isTranscript);
+  summaryDisplayEl.classList.toggle("hidden", isTranscript);
 }
 
 function onVideoReady(videoId) {
@@ -304,7 +334,8 @@ async function showTranscript(videoId) {
   const body = await response.json();
   const isEmpty = body.text.trim() === "";
   transcriptDisplayEl.textContent = isEmpty ? "No speech detected in this clip." : body.text;
-  transcriptDisplayEl.classList.remove("hidden");
+  showAiPaneContent();
+  setActiveAiTab("transcript");
 
   if (isEmpty) {
     summarizeSection.classList.add("hidden");
@@ -360,7 +391,7 @@ async function showLatestSummary(videoId) {
   const latest = body.summaries[0];
   if (!latest) return;
   summaryDisplayEl.textContent = latest.content;
-  summaryDisplayEl.classList.remove("hidden");
+  summaryDisplayEl.classList.toggle("hidden", activeAiTab !== "summary");
 }
 
 async function startSummarization() {
@@ -655,6 +686,9 @@ for (const input of [librarySearchInput, libraryDateFromInput, libraryDateToInpu
     if (event.key === "Enter") fetchVideos();
   });
 }
+
+aiTabTranscriptButton.addEventListener("click", () => setActiveAiTab("transcript"));
+aiTabSummaryButton.addEventListener("click", () => setActiveAiTab("summary"));
 
 downloadButton.addEventListener("click", startDownload);
 previewButton.addEventListener("click", previewSelection);

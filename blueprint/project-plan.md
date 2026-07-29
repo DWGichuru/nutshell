@@ -45,23 +45,23 @@ Additionally:
 - **Deployment:** Local only — FastAPI dev server, accessed at `localhost`
 
 ## UI/UX Flow
-1. **Home / New Summary view**
-   - Input field for YouTube URL
-   - On submit: fetch metadata, show title/channel/duration
-   - If duration exceeds threshold, show warning banner with estimated processing time; user confirms to proceed
-2. **Download & Trim view**
-   - Audio downloads, waveform renders via wavesurfer.js
-   - User drags trim handles to select start/end region, can preview playback of selection
-   - "Transcribe" button proceeds with the trimmed selection
-3. **Transcription & Summary view**
-   - Transcription method picker: Local (mlx-whisper) or API (OpenAI Whisper) — API option shows a note about per-minute cost
-   - Progress indicator during transcription (method-dependent: local shows on-device progress, API shows upload/processing status)
-   - Once complete, transcript is displayed
-   - Format picker (paragraph / bullets / chaptered) — user selects, triggers summary generation
-   - Summary displayed alongside transcript; can regenerate with a different format without re-transcribing
-4. **Library view**
-   - Searchable/filterable list of past videos (by title, channel, date)
-   - Selecting a video reloads its stored transcript and any past summaries, with the option to generate a new summary format without redownloading or re-transcribing
+Single 3-pane shell, no client-side router:
+1. **Drawer (left, persistent)**
+   - Navigation between New Summary and Library. Always visible, not collapsible.
+2. **User-interaction pane (center)**
+   - Forms and actions for the active page.
+   - New Summary: URL input; on submit, fetch metadata, show title/channel/duration,
+     warn and require confirmation if duration exceeds the threshold; then
+     sequentially reveal waveform trim controls, transcription method picker
+     (Local vs API, with a cost note for API), and summary format picker
+     (paragraph / bullets / chaptered) as each prior step completes.
+   - Library: searchable/filterable list of past videos (by title, channel, date);
+     selecting one populates the AI-generated pane.
+3. **AI-generated pane (right, tabbed)**
+   - Shows generated content for the active video: a Transcript tab and a
+     Summary tab (reflecting the currently-selected/most recent format).
+   - Selecting a video from the Library page populates this pane the same way
+     a fresh New Summary run does, so both pages share one content surface.
 
 ## Design Palette
 Visual identity is built around the "Nutshell" mark (Style A — warm/organic walnut icon). Colors below are chosen to work as Tailwind custom theme colors.

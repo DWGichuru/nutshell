@@ -63,3 +63,42 @@ sections. Out of scope for this feature since fixing it well means touching
 the pre-existing download/trim/transcribe/summarize code paths too, not just
 the new library code.
 **Resolution:**
+
+### F-06 [P2] fixed - Drawer nav active state didn't override the inactive dark-mode classes
+
+**File:** frontend/js/app.js:57
+**Found:** 2026-07-27 by /autopilot audit (scope: current)
+**Why it matters:** `nav-library`'s markup hard-codes `dark:bg-espresso/60
+dark:text-cream` alongside the base inactive classes. `INACTIVE_NAV_CLASSES`
+(what `showNewSummaryView`/`showLibraryView` add/remove) didn't include those
+`dark:` classes, so clicking to make Library active in dark mode added
+`bg-terracotta` without removing the two-class-specificity `dark:` rules,
+which always win the cascade over a single-class `.bg-terracotta` selector.
+The active drawer item stayed dark/blended instead of showing the terracotta
+highlight. Pre-existing in the old top-nav (same classes), but the persistent
+drawer built in this feature makes it far more visible.
+**Suggested fix:** Add `dark:bg-espresso/60` and `dark:text-cream` to
+`INACTIVE_NAV_CLASSES` so the classList add/remove pair always fully swaps
+state in both light and dark mode.
+**Resolution:** Widened `INACTIVE_NAV_CLASSES` in `frontend/js/app.js` to
+include the two `dark:` classes; verified via Playwright screenshot that
+toggling New Summary/Library in dark mode now shows the terracotta highlight
+correctly on whichever item is active.
+
+### F-07 [P3] open - YouTube URL input placeholder truncates at the new 420px interaction-pane width
+
+**File:** frontend/index.html:56
+**Found:** 2026-07-27 by /autopilot audit (scope: current)
+**Why it matters:** The download form keeps its original side-by-side
+input+button layout, unchanged per this feature's scope (only the container
+was restructured, not section internals). At the new fixed 420px
+interaction-pane width, the input's placeholder text ("https://www.youtube.com/watch?v=...")
+is visually clipped. Purely cosmetic - the field is still fully usable, just
+harder to read the full placeholder. The approved prototype
+(`prototypes/new-summary.html`) actually uses a stacked full-width button
+below the input rather than side-by-side, which would fix this, but changing
+the download form's internal layout was explicitly out of scope for 9a.
+**Suggested fix:** In a follow-up step (9b or a small `/fix`), stack the
+Download button below the URL input (matching the prototype) instead of
+beside it.
+**Resolution:**

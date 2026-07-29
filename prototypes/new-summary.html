@@ -1,0 +1,373 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Nutshell - New Summary (prototype)</title>
+    <link rel="stylesheet" href="theme.css" />
+    <style>
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font-family: var(--font-sans);
+        line-height: 1.5;
+      }
+      .shell {
+        display: flex;
+        height: 100vh;
+        overflow: hidden;
+      }
+
+      /* Drawer */
+      .drawer {
+        width: var(--drawer-width);
+        flex-shrink: 0;
+        background: var(--surface);
+        border-right: 1px solid var(--border);
+        padding: var(--space-section) 20px;
+        display: flex;
+        flex-direction: column;
+        gap: 28px;
+      }
+      .wordmark {
+        font-family: var(--font-serif);
+        font-weight: 700;
+        font-size: 22px;
+        color: var(--accent);
+      }
+      .nav-list { display: flex; flex-direction: column; gap: 6px; }
+      .nav-item {
+        display: block;
+        width: 100%;
+        text-align: left;
+        padding: 10px 12px;
+        border-radius: var(--radius-sm);
+        border: none;
+        background: transparent;
+        color: var(--nav-inactive-text);
+        font-size: 15px;
+        font-weight: 500;
+        cursor: pointer;
+        font-family: inherit;
+      }
+      .nav-item:hover { background: var(--border); }
+      .nav-item.active {
+        background: var(--nav-active-bg);
+        color: var(--nav-active-text);
+      }
+      .drawer-footer {
+        margin-top: auto;
+        font-size: 12px;
+        color: var(--muted);
+      }
+
+      /* Interaction pane */
+      .interaction-pane {
+        width: var(--interaction-width);
+        flex-shrink: 0;
+        border-right: 1px solid var(--border);
+        padding: var(--space-pane);
+        overflow-y: auto;
+      }
+      h2.pane-title {
+        font-family: var(--font-serif);
+        font-size: 20px;
+        font-weight: 600;
+        margin: 0 0 var(--space-section) 0;
+      }
+      label.field-label {
+        display: block;
+        font-size: 13px;
+        font-weight: 600;
+        margin-bottom: 6px;
+      }
+      input[type="text"] {
+        width: 100%;
+        padding: 10px 12px;
+        border-radius: var(--radius-sm);
+        border: 1px solid var(--border);
+        background: var(--surface-recessed);
+        color: var(--text);
+        font-size: 14px;
+        font-family: inherit;
+      }
+      .btn {
+        display: inline-block;
+        padding: 10px 18px;
+        border-radius: var(--radius-sm);
+        border: none;
+        font-weight: 600;
+        font-size: 14px;
+        cursor: pointer;
+        font-family: inherit;
+      }
+      .btn-primary { background: var(--accent); color: var(--on-accent); }
+      .btn-primary:hover { background: var(--accent-dark); }
+      .btn-secondary { background: var(--surface-recessed); color: var(--text); border: 1px solid var(--border); }
+      .btn-full { width: 100%; margin-top: 10px; }
+
+      .meta-card {
+        background: var(--surface-recessed);
+        border-radius: var(--radius);
+        padding: 16px;
+        margin-bottom: var(--space-section);
+      }
+      .meta-card .title { font-weight: 700; margin-bottom: 4px; }
+      .meta-card .sub { font-size: 13px; color: var(--muted); }
+
+      .step-section {
+        padding-top: var(--space-section);
+        margin-top: var(--space-section);
+        border-top: 1px solid var(--border);
+      }
+      .step-section h3 {
+        font-family: var(--font-serif);
+        font-size: 16px;
+        margin: 0 0 14px 0;
+      }
+      .waveform-placeholder {
+        height: 64px;
+        border-radius: var(--radius-sm);
+        background: repeating-linear-gradient(
+          90deg,
+          var(--accent) 0px, var(--accent) 2px,
+          transparent 2px, transparent 6px
+        );
+        background-color: var(--surface-recessed);
+        opacity: 0.6;
+        margin-bottom: 12px;
+      }
+      .trim-times { font-size: 13px; color: var(--muted); margin-bottom: 12px; }
+      .trim-times b { color: var(--accent); font-weight: 700; }
+
+      fieldset { border: none; margin: 0 0 4px 0; padding: 0; }
+      .radio-row { display: flex; flex-direction: column; gap: 10px; }
+      .radio-row label { font-size: 14px; display: flex; align-items: flex-start; gap: 8px; }
+      .radio-row .hint { color: var(--muted); font-size: 12px; display: block; }
+
+      .status-line { font-size: 13px; color: var(--success); margin-top: 10px; }
+
+      /* AI-generated pane */
+      .ai-pane {
+        flex: 1;
+        display: flex;
+        flex-direction: column;
+        overflow: hidden;
+      }
+      .tabs {
+        display: flex;
+        gap: 4px;
+        padding: 20px var(--space-pane) 0 var(--space-pane);
+        border-bottom: 1px solid var(--border);
+        background: var(--surface);
+      }
+      .tab {
+        padding: 10px 18px;
+        border: none;
+        background: var(--tab-inactive-bg);
+        color: var(--muted);
+        font-family: var(--font-sans);
+        font-size: 14px;
+        font-weight: 600;
+        cursor: pointer;
+        border-radius: var(--radius-sm) var(--radius-sm) 0 0;
+      }
+      .tab.active {
+        background: var(--tab-active-bg);
+        color: var(--accent);
+      }
+      .tab-content {
+        flex: 1;
+        overflow-y: auto;
+        padding: var(--space-pane);
+      }
+      .tab-panel { display: none; }
+      .tab-panel.active { display: block; }
+
+      .transcript-line {
+        display: flex;
+        gap: 14px;
+        padding: 8px 0;
+        border-bottom: 1px solid var(--border);
+        font-size: 14px;
+      }
+      .transcript-line .ts {
+        color: var(--muted);
+        font-variant-numeric: tabular-nums;
+        flex-shrink: 0;
+        width: 48px;
+      }
+
+      .summary-format-pill {
+        display: inline-block;
+        font-size: 12px;
+        font-weight: 600;
+        color: var(--accent-dark);
+        background: rgba(201, 111, 69, 0.15);
+        padding: 3px 10px;
+        border-radius: 999px;
+        margin-bottom: 16px;
+      }
+      .summary-bullets { padding-left: 20px; margin: 0; }
+      .summary-bullets li { margin-bottom: 10px; font-size: 14px; }
+
+      .empty-pane {
+        height: 100%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: var(--muted);
+        font-size: 14px;
+        text-align: center;
+        padding: 40px;
+      }
+
+      /* Prototype-only state switcher, not part of the real UI */
+      .proto-switch {
+        position: fixed;
+        top: 14px;
+        right: 14px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: var(--radius-sm);
+        padding: 8px 10px;
+        font-size: 12px;
+        display: flex;
+        gap: 8px;
+        align-items: center;
+        z-index: 10;
+      }
+      .proto-switch button {
+        font-size: 12px;
+        padding: 5px 10px;
+        border-radius: 6px;
+        border: 1px solid var(--border);
+        background: var(--surface-recessed);
+        color: var(--text);
+        cursor: pointer;
+      }
+      .proto-switch button.active { background: var(--accent); color: var(--on-accent); border-color: var(--accent); }
+    </style>
+  </head>
+  <body>
+    <div class="proto-switch">
+      Prototype state:
+      <button id="btn-state-start" class="active" onclick="setState('start')">Start</button>
+      <button id="btn-state-progress" onclick="setState('progress')">In progress</button>
+      <button onclick="document.documentElement.classList.toggle('dark')">Toggle dark</button>
+    </div>
+
+    <div class="shell">
+      <nav class="drawer">
+        <div class="wordmark">Nutshell</div>
+        <div class="nav-list">
+          <button class="nav-item active">New Summary</button>
+          <button class="nav-item">Library</button>
+        </div>
+        <div class="drawer-footer">Local - localhost:8000</div>
+      </nav>
+
+      <section class="interaction-pane">
+        <!-- START STATE -->
+        <div id="state-start">
+          <h2 class="pane-title">New Summary</h2>
+          <label class="field-label" for="url">YouTube URL</label>
+          <input id="url" type="text" placeholder="https://www.youtube.com/watch?v=..." />
+          <button class="btn btn-primary btn-full">Download</button>
+        </div>
+
+        <!-- IN PROGRESS STATE -->
+        <div id="state-progress" style="display: none;">
+          <h2 class="pane-title">New Summary</h2>
+          <div class="meta-card">
+            <div class="title">The Deep Sea, Explained</div>
+            <div class="sub">Real Science &middot; 12:34 &middot; added just now</div>
+          </div>
+
+          <div class="step-section">
+            <h3>Trim</h3>
+            <div class="waveform-placeholder"></div>
+            <div class="trim-times">Start: <b>0:42</b> &nbsp; End: <b>11:58</b></div>
+            <button class="btn btn-secondary">Preview</button>
+          </div>
+
+          <div class="step-section">
+            <h3>Transcribe</h3>
+            <fieldset>
+              <div class="radio-row">
+                <label><input type="radio" name="method" checked /> <span>API (OpenAI Whisper) <span class="hint">costs per minute of audio</span></span></label>
+                <label><input type="radio" name="method" /> <span>Local (mlx-whisper) <span class="hint">free, on-device</span></span></label>
+              </div>
+            </fieldset>
+            <button class="btn btn-primary" style="margin-top: 14px;">Transcribe</button>
+            <div class="status-line">Transcribed in 38s</div>
+          </div>
+
+          <div class="step-section">
+            <h3>Summarize</h3>
+            <fieldset>
+              <div class="radio-row">
+                <label><input type="radio" name="format" checked /> Paragraph</label>
+                <label><input type="radio" name="format" /> Bullet points</label>
+                <label><input type="radio" name="format" /> Chaptered</label>
+              </div>
+            </fieldset>
+            <button class="btn btn-primary" style="margin-top: 14px;">Summarize</button>
+          </div>
+        </div>
+      </section>
+
+      <section class="ai-pane">
+        <div id="ai-empty" class="empty-pane" style="flex: 1;">
+          Paste a link and download to see the transcript and summary here.
+        </div>
+
+        <div id="ai-populated" style="display: none; flex: 1; flex-direction: column; overflow: hidden;">
+          <div class="tabs">
+            <button class="tab active" onclick="setTab('transcript')" id="tab-transcript">Transcript</button>
+            <button class="tab" onclick="setTab('summary')" id="tab-summary">Summary</button>
+          </div>
+          <div class="tab-content">
+            <div class="tab-panel active" id="panel-transcript">
+              <div class="transcript-line"><span class="ts">0:42</span><span>The ocean's deepest point, the Mariana Trench, plunges nearly eleven kilometers below the surface.</span></div>
+              <div class="transcript-line"><span class="ts">0:58</span><span>Pressure down there is over a thousand times what we feel at sea level.</span></div>
+              <div class="transcript-line"><span class="ts">1:15</span><span>And yet, life finds a way to survive in total darkness and crushing depth.</span></div>
+              <div class="transcript-line"><span class="ts">1:33</span><span>Bioluminescent creatures use their own light to hunt, hide, and communicate.</span></div>
+              <div class="transcript-line"><span class="ts">1:52</span><span>Some species have never been seen alive at the surface.</span></div>
+            </div>
+            <div class="tab-panel" id="panel-summary">
+              <span class="summary-format-pill">Bullet points</span>
+              <ul class="summary-bullets">
+                <li>The Mariana Trench is the ocean's deepest point, reaching nearly 11km below the surface.</li>
+                <li>Pressure at that depth exceeds 1,000x surface-level atmospheric pressure.</li>
+                <li>Deep-sea organisms rely on bioluminescence for hunting, camouflage, and communication.</li>
+                <li>Many deep-sea species have never been observed at the surface.</li>
+              </ul>
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <script>
+      function setState(state) {
+        const isStart = state === "start";
+        document.getElementById("state-start").style.display = isStart ? "block" : "none";
+        document.getElementById("state-progress").style.display = isStart ? "none" : "block";
+        document.getElementById("ai-empty").style.display = isStart ? "flex" : "none";
+        document.getElementById("ai-populated").style.display = isStart ? "none" : "flex";
+        document.getElementById("btn-state-start").classList.toggle("active", isStart);
+        document.getElementById("btn-state-progress").classList.toggle("active", !isStart);
+      }
+      function setTab(tab) {
+        const isTranscript = tab === "transcript";
+        document.getElementById("tab-transcript").classList.toggle("active", isTranscript);
+        document.getElementById("tab-summary").classList.toggle("active", !isTranscript);
+        document.getElementById("panel-transcript").classList.toggle("active", isTranscript);
+        document.getElementById("panel-summary").classList.toggle("active", !isTranscript);
+      }
+    </script>
+  </body>
+</html>

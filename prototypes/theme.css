@@ -1,0 +1,63 @@
+/* Theme variables - the durable output of /prototype.
+   Ported from blueprint/context/project-overview.md's existing Nutshell
+   palette (terracotta/cream/espresso), not a new brand. Light mode is the
+   default; dark mode is a `.dark` class on <html>, matching the real app's
+   Tailwind `darkMode: "class"` config. */
+
+:root {
+  /* surfaces */
+  --bg: #F5F1EA;           /* cream - page background       */
+  --surface: #F0E0C8;      /* warm ivory - cards, panes      */
+  --surface-recessed: #F5F1EA; /* inputs, code/transcript blocks */
+  --border: rgba(138, 122, 106, 0.3); /* warm-gray/30 */
+
+  /* text */
+  --text: #3A2A1E;         /* dark espresso - primary       */
+  --muted: #8A7A6A;        /* warm gray - secondary, labels */
+  --on-accent: #F5F1EA;    /* text on terracotta fills      */
+
+  /* accent */
+  --accent: #C96F45;       /* terracotta - primary action, active states */
+  --accent-dark: #A85A38;  /* burnt terracotta - hover/pressed */
+
+  /* component states */
+  --success: #3D5A3D;      /* sage green - complete/saved     */
+  --warning: #B5533C;      /* muted rust - warnings/errors    */
+  --tab-active-bg: var(--bg);
+  --tab-inactive-bg: transparent;
+  --nav-active-bg: var(--accent);
+  --nav-active-text: var(--on-accent);
+  --nav-inactive-text: var(--text);
+
+  /* type */
+  --font-serif: Georgia, "Times New Roman", serif;
+  --font-sans: -apple-system, "Inter", system-ui, sans-serif;
+
+  /* scale - calm/spacious density */
+  --radius: 10px;
+  --radius-sm: 6px;
+  --space-pane: 32px;
+  --space-section: 24px;
+  --drawer-width: 232px;
+  --interaction-width: 420px;
+}
+
+:root.dark {
+  --bg: #1E1B16;            /* near-black brown */
+  --surface: rgba(58, 42, 30, 0.6); /* espresso/60 */
+  --surface-recessed: rgba(58, 42, 30, 0.4); /* espresso/40 */
+  --border: rgba(138, 122, 106, 0.3);
+
+  --text: #F5F1EA;          /* cream */
+  --muted: #A99884;         /* lightened warm-gray for dark contrast */
+  --on-accent: #F5F1EA;
+
+  --accent: #C96F45;
+  --accent-dark: #A85A38;
+
+  --success: #6FA06F;
+  --warning: #E08268;
+  --nav-active-bg: var(--accent);
+  --nav-active-text: var(--on-accent);
+  --nav-inactive-text: var(--text);
+}

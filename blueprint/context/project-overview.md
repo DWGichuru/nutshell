@@ -18,8 +18,9 @@ chosen format - turning a long video into a fast, reusable text asset.
 ## Features
 
 Build order below follows `build-plan.md` Phases 1-6 (the MVP loop). Phase 7 is
-cross-cutting hardening applied after the loop works end to end, and Phase 8 is
-explicitly optional/future - see Open questions.
+cross-cutting hardening applied after the loop works end to end, Phase 8 is
+explicitly optional/future, and Phase 9 is the 3-pane home page redesign - see
+Open questions.
 
 1. **YouTube audio download** - paste a link, fetch metadata (title/channel/duration),
    warn on long videos with an estimated transcription time, then download the
@@ -109,22 +110,26 @@ Not in v1 - single-user local tool, no billing or accounts.
 
 ## UI/UX
 
-Four views in one app, no client-side router (vanilla HTML/JS):
+Single 3-pane shell, no client-side router (vanilla HTML/JS):
 
-- **Home / New Summary** - URL input; on submit, fetches and shows
-  title/channel/duration; shows a warning banner with an estimated processing
-  time if duration exceeds the threshold (default 60 min), and requires
-  confirmation to proceed.
-- **Download & Trim** - audio downloads, waveform renders, user drags trim
-  handles and previews the selection, "Transcribe" proceeds with the trimmed
-  range.
-- **Transcription & Summary** - method picker (Local vs API, with a cost note
-  for API), method-aware progress indicator, transcript display, format picker
-  (paragraph/bullets/chaptered) that triggers summary generation without
-  re-transcribing.
-- **Library** - searchable/filterable list of past videos (title/channel/date);
-  selecting one reloads its `meta.json`, `transcript.json`, and past summaries,
-  with the option to generate a new summary format in place.
+- **Drawer (left, persistent)** - navigation between New Summary and Library.
+  Always visible, not collapsible.
+- **User-interaction pane (center)** - forms and actions for the active page:
+  - New Summary: URL input; on submit, fetches and shows title/channel/duration,
+    with a warning banner and required confirmation if duration exceeds the
+    threshold (default 60 min); then sequentially reveals waveform trim
+    controls (drag handles, preview playback), transcription method picker
+    (Local vs API, with a cost note for API, method-aware progress indicator),
+    and summary format picker (paragraph/bullets/chaptered) as each prior step
+    completes.
+  - Library: searchable/filterable list of past videos (title/channel/date);
+    selecting one populates the AI-generated pane and offers generating a new
+    summary format in place, without re-downloading or re-transcribing.
+- **AI-generated pane (right, tabbed)** - shows generated content for the
+  active video: a Transcript tab and a Summary tab (reflecting the
+  currently-selected/most recent format). Selecting a video from the Library
+  page populates this pane the same way a fresh New Summary run does, so both
+  pages share one content surface.
 
 ### Design
 
@@ -168,3 +173,9 @@ Local only - no host, no public deployment.
 - `build-plan.md` Phase 8 (additional summarization providers, delete-video,
   export options, manual index resync) is explicitly optional/future; treat it
   as a post-MVP backlog, not part of the Phase 1-6 build order above.
+- `build-plan.md` Phase 9 (3-pane home page redesign: persistent drawer,
+  user-interaction pane, tabbed AI-generated pane, with Library unified into
+  the same shell) supersedes the "four views" layout described in earlier UI/UX
+  drafts. It is large enough that `/feature` is expected to split it into
+  sub-features (e.g. shell/drawer first, then the interaction pane, then the
+  AI-generated pane, then Library unification) rather than one spec.

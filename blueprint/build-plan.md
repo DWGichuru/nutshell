@@ -71,3 +71,8 @@ Sequential checklist for building the app. Each phase builds on the previous one
 - [ ] Add ability to delete a video and its data from the library
 - [ ] Add export options (e.g. copy summary, download transcript as `.txt`)
 - [ ] Add index rebuild trigger in the UI (manual "resync" button)
+
+## Phase 9: Home Page Redesign (3-Pane Layout)
+- [ ] 9. Redesign the home page into a 3-pane shell: persistent navigation drawer, a user-interaction pane for forms/actions, and a tabbed AI-generated content pane (Transcript, Summary). Unify Library into the same shell instead of its own layout.
+  - [x] 9a. 3-pane shell + New Summary flow - persistent drawer, the 3-pane grid, and the tabbed AI-generated pane (Transcript/Summary) wired to the existing New Summary flow.
+  - [ ] 9b. Unify Library into the shell - move Library's search/filter/results into the interaction pane and its transcript/summaries into the same tabbed AI-generated pane, retiring the old library-detail layout.
