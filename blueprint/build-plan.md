@@ -62,7 +62,7 @@ Sequential checklist for building the app. Each phase builds on the previous one
 - [x] Handle invalid/unreachable YouTube URLs gracefully
 - [x] Handle very short clips / silence (transcription edge cases)
 - [x] Add loading states/spinners for download, transcription, and summarization steps
-- [ ] Confirm Tailwind styling is consistent across all views
+- [x] Confirm Tailwind styling is consistent across all views
 - [ ] Add basic error messages/toasts for failed API calls (e.g. missing/invalid API key)
 - [ ] Final end-to-end test: full flow from URL input to saved summary, then reload from library
 
