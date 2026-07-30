@@ -102,3 +102,26 @@ the download form's internal layout was explicitly out of scope for 9a.
 Download button below the URL input (matching the prototype) instead of
 beside it.
 **Resolution:**
+
+### F-08 [P2] open - Trimming the default full-duration region can fail with a confusing "end_seconds exceeds video duration" error
+
+**File:** frontend-react/src/hooks/useWaveform.ts:37
+**Found:** 2026-07-30 by /autopilot audit (scope: current)
+**Why it matters:** The initial region spans `{start: 0, end: duration}` where
+`duration` comes from wavesurfer's `decode` event as a float (e.g.
+`19.005542`). `backend/routes/videos.py` validates `end_seconds` against
+`meta.duration_seconds`, which is stored as an int (`19`). Clicking Trim
+immediately after a video finishes downloading, without first adjusting the
+region, can send `end_seconds` slightly past the stored integer duration and
+get rejected with a real but confusing 400. Verified reproducible during this
+feature's Step 2 acceptance check. This is not a regression from the React
+port - `frontend/js/app.js`'s `renderWaveform`/`trimSelection` post
+`activeRegion.end` the same way, so the old app has the identical latent bug;
+11b ported the behavior faithfully per its "match `frontend/js/app.js` exactly"
+scope rather than introducing a fix that would diverge from parity.
+**Suggested fix:** Clamp the initial region's `end` (and/or the trim request's
+`end_seconds`) to `Math.min(decodedDuration, knownDurationSeconds)`, or have
+the backend accept a small epsilon of slack. Touches the shared trim
+contract both apps rely on, so best done as its own small `/fix` rather than
+inside this feature.
+**Resolution:**

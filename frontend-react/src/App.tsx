@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { TopBar } from './components/layout/TopBar';
 import { Drawer } from './components/layout/Drawer';
 import { ResizablePane } from './components/shared/ResizablePane';
+import { NewSummaryPage } from './pages/NewSummaryPage/NewSummaryPage';
 
 export type Page = 'new-summary' | 'library';
 
@@ -19,17 +20,7 @@ function App() {
           <Drawer open={drawerOpen} activePage={activePage} onSelectPage={setActivePage} />
           <div className="flex-1 overflow-hidden">
             {activePage === 'new-summary' ? (
-              <main className="flex h-full">
-                <ResizablePane
-                  {...RESIZABLE_PANE_BOUNDS}
-                  paneContent={<p>New Summary interaction pane placeholder.</p>}
-                  restContent={
-                    <div className="flex h-full items-center justify-center p-10 text-center text-warm-gray">
-                      <p>Paste a link and download to see the transcript and summary here.</p>
-                    </div>
-                  }
-                />
-              </main>
+              <NewSummaryPage />
             ) : (
               <main className="flex h-full">
                 <ResizablePane

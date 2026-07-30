@@ -92,7 +92,7 @@ Sequential checklist for building the app. Each phase builds on the previous one
         dev-proxy to FastAPI, Vitest setup, typed API client + pure lib helpers
         (formatTime/formatDate/pane-math/polling), and the shared TopBar/Drawer
         empty shell plus Tabs/AsyncStatus/ResizablePane components.
-  - [ ] 11b. New Summary flow - metadata preview (new `POST /api/videos/metadata`
+  - [x] 11b. New Summary flow - metadata preview (new `POST /api/videos/metadata`
         wiring), download, waveform trim, transcription method picker, and
         summarization, each with its polling loop, ported into the new app.
   - [ ] 11c. Library flow - search/filter/list, row selection with
