@@ -230,8 +230,8 @@
         </div>
       </main>
 
-      <main id="library-view" class="hidden h-full overflow-y-auto">
-        <div class="mx-auto max-w-3xl space-y-6 px-6 py-10">
+      <main id="library-view" class="hidden flex h-full">
+        <div id="library-interaction-pane" class="w-[420px] flex-shrink-0 space-y-6 overflow-y-auto border-r border-warm-gray/30 p-8">
         <section id="library-search-section" class="rounded-lg bg-ivory p-6 dark:bg-near-black dark:border dark:border-warm-gray/30">
           <h2 class="mb-4 font-serif text-xl font-semibold">Library</h2>
           <div class="flex flex-wrap items-end gap-3">
@@ -271,15 +271,9 @@
           <ul id="library-results" class="mt-4 divide-y divide-warm-gray/20"></ul>
         </section>
 
-        <section id="library-detail-section" class="hidden rounded-lg bg-ivory p-6 dark:bg-near-black dark:border dark:border-warm-gray/30">
-          <h2 id="library-detail-title" class="mb-1 font-serif text-xl font-semibold"></h2>
-          <p id="library-detail-meta" class="mb-4 text-sm text-warm-gray"></p>
-          <pre id="library-transcript-display" class="whitespace-pre-wrap rounded bg-cream p-4 text-sm dark:bg-espresso/40"></pre>
-
-          <h3 class="mb-2 mt-6 font-serif text-lg font-semibold">Summaries</h3>
-          <div id="library-summaries" class="space-y-3"></div>
-
-          <fieldset class="mb-4 mt-6 flex items-center gap-6">
+        <div id="library-generate-box" class="hidden rounded-lg bg-ivory p-6 dark:bg-near-black dark:border dark:border-warm-gray/30">
+          <h3 class="mb-4 font-serif text-lg font-semibold">Generate new summary</h3>
+          <fieldset class="mb-4 flex items-center gap-6">
             <legend class="sr-only">Summary provider</legend>
             <label class="flex items-center gap-2">
               <input type="radio" name="library-summary-provider" value="anthropic" checked />
@@ -321,7 +315,44 @@
             <p id="library-summarize-status" class="text-sm text-warm-gray"></p>
           </div>
           <p id="library-summarize-error" class="mt-3 text-sm text-rust hidden"></p>
+        </div>
+        </div>
+
+        <div id="library-ai-pane" class="flex flex-1 flex-col overflow-hidden">
+          <div id="library-ai-pane-empty" class="flex h-full items-center justify-center p-10 text-center text-warm-gray">
+            <p>Select a video from the library to view its transcript and summaries.</p>
+          </div>
+
+          <div id="library-ai-pane-content" class="hidden flex-1 overflow-y-auto p-8">
+        <section id="library-detail-section" class="hidden">
+          <h2 id="library-detail-title" class="mb-1 font-serif text-xl font-semibold"></h2>
+          <p id="library-detail-meta" class="mb-4 text-sm text-warm-gray"></p>
+
+          <div class="flex gap-1 border-b border-warm-gray/30 bg-ivory px-2 pt-2 dark:bg-espresso/60">
+            <button
+              id="library-ai-tab-transcript"
+              class="rounded-t-md bg-cream px-4 py-2 text-sm font-semibold text-terracotta dark:bg-near-black"
+            >
+              Transcript
+            </button>
+            <button
+              id="library-ai-tab-summary"
+              class="rounded-t-md px-4 py-2 text-sm font-semibold text-warm-gray hover:text-espresso dark:hover:text-cream"
+            >
+              Summary
+            </button>
+          </div>
+
+          <div class="pt-4">
+            <pre id="library-transcript-display" class="hidden whitespace-pre-wrap text-sm"></pre>
+
+            <div id="library-panel-summary" class="hidden">
+              <h3 class="mb-2 font-serif text-lg font-semibold">Summaries</h3>
+              <div id="library-summaries" class="space-y-3"></div>
+            </div>
+          </div>
         </section>
+          </div>
         </div>
       </main>
       </div>

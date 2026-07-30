@@ -41,6 +41,12 @@ const libraryDateToInput = document.getElementById("library-date-to");
 const libraryFilterButton = document.getElementById("library-filter-button");
 const libraryErrorEl = document.getElementById("library-error");
 const libraryResultsEl = document.getElementById("library-results");
+const libraryGenerateBoxEl = document.getElementById("library-generate-box");
+const libraryAiPaneEmptyEl = document.getElementById("library-ai-pane-empty");
+const libraryAiPaneContentEl = document.getElementById("library-ai-pane-content");
+const libraryAiTabTranscriptButton = document.getElementById("library-ai-tab-transcript");
+const libraryAiTabSummaryButton = document.getElementById("library-ai-tab-summary");
+const libraryPanelSummaryEl = document.getElementById("library-panel-summary");
 const libraryDetailSection = document.getElementById("library-detail-section");
 const libraryDetailTitleEl = document.getElementById("library-detail-title");
 const libraryDetailMetaEl = document.getElementById("library-detail-meta");
@@ -63,11 +69,13 @@ const INACTIVE_NAV_CLASSES = [
 ];
 const AI_TAB_ACTIVE_CLASSES = ["bg-cream", "dark:bg-near-black", "text-terracotta"];
 const AI_TAB_INACTIVE_CLASSES = ["text-warm-gray", "hover:text-espresso", "dark:hover:text-cream"];
+const LIBRARY_ROW_SELECTED_CLASSES = ["rounded", "pl-2", "bg-terracotta/10", "border-l-2", "border-terracotta"];
 
 let wavesurfer = null;
 let activeRegion = null;
 let currentLibraryVideoId = null;
 let activeAiTab = "transcript";
+let activeLibraryAiTab = "transcript";
 
 function formatTime(seconds) {
   const total = Math.max(0, Math.round(seconds));
@@ -127,6 +135,22 @@ async function pollDownloadStatus(videoId) {
 function showAiPaneContent() {
   aiPaneEmptyEl.classList.add("hidden");
   aiPaneContentEl.classList.remove("hidden");
+}
+
+function showLibraryAiPaneContent() {
+  libraryAiPaneEmptyEl.classList.add("hidden");
+  libraryAiPaneContentEl.classList.remove("hidden");
+}
+
+function setActiveLibraryAiTab(tab) {
+  activeLibraryAiTab = tab;
+  const isTranscript = tab === "transcript";
+  libraryAiTabTranscriptButton.classList.remove(...AI_TAB_ACTIVE_CLASSES, ...AI_TAB_INACTIVE_CLASSES);
+  libraryAiTabTranscriptButton.classList.add(...(isTranscript ? AI_TAB_ACTIVE_CLASSES : AI_TAB_INACTIVE_CLASSES));
+  libraryAiTabSummaryButton.classList.remove(...AI_TAB_ACTIVE_CLASSES, ...AI_TAB_INACTIVE_CLASSES);
+  libraryAiTabSummaryButton.classList.add(...(isTranscript ? AI_TAB_INACTIVE_CLASSES : AI_TAB_ACTIVE_CLASSES));
+  libraryTranscriptDisplayEl.classList.toggle("hidden", !isTranscript);
+  libraryPanelSummaryEl.classList.toggle("hidden", isTranscript);
 }
 
 function setActiveAiTab(tab) {
@@ -528,6 +552,7 @@ function renderLibraryResults(videos) {
   for (const video of videos) {
     const item = document.createElement("li");
     item.className = "py-3";
+    item.dataset.videoId = video.video_id;
 
     const button = document.createElement("button");
     button.className = "w-full text-left hover:text-terracotta";
@@ -540,11 +565,23 @@ function renderLibraryResults(videos) {
     item.appendChild(button);
     libraryResultsEl.appendChild(item);
   }
+
+  updateSelectedRowHighlight();
+}
+
+function updateSelectedRowHighlight() {
+  for (const item of libraryResultsEl.children) {
+    const isSelected = item.dataset.videoId === currentLibraryVideoId;
+    for (const cls of LIBRARY_ROW_SELECTED_CLASSES) {
+      item.classList.toggle(cls, isSelected);
+    }
+  }
 }
 
 async function selectLibraryVideo(videoId) {
   setLibraryError(null);
   currentLibraryVideoId = videoId;
+  updateSelectedRowHighlight();
 
   try {
     const metaResponse = await fetch(`/api/videos/${videoId}`);
@@ -555,6 +592,9 @@ async function selectLibraryVideo(videoId) {
     const meta = await metaResponse.json();
     if (videoId !== currentLibraryVideoId) return;
 
+    showLibraryAiPaneContent();
+    setActiveLibraryAiTab("transcript");
+    libraryGenerateBoxEl.classList.remove("hidden");
     libraryDetailSection.classList.remove("hidden");
     libraryDetailSection.dataset.videoId = videoId;
     libraryDetailTitleEl.textContent = meta.title;
@@ -689,6 +729,8 @@ for (const input of [librarySearchInput, libraryDateFromInput, libraryDateToInpu
 
 aiTabTranscriptButton.addEventListener("click", () => setActiveAiTab("transcript"));
 aiTabSummaryButton.addEventListener("click", () => setActiveAiTab("summary"));
+libraryAiTabTranscriptButton.addEventListener("click", () => setActiveLibraryAiTab("transcript"));
+libraryAiTabSummaryButton.addEventListener("click", () => setActiveLibraryAiTab("summary"));
 
 downloadButton.addEventListener("click", startDownload);
 previewButton.addEventListener("click", previewSelection);
