@@ -46,8 +46,13 @@ Additionally:
 
 ## UI/UX Flow
 Single 3-pane shell, no client-side router:
-1. **Drawer (left, persistent)**
-   - Navigation between New Summary and Library. Always visible, not collapsible.
+0. **Top bar (persistent, above the drawer)**
+   - App logo/wordmark, title, and a hamburger icon that toggles the drawer.
+     Always visible regardless of whether the drawer is open or collapsed.
+1. **Drawer (left, collapsible)**
+   - Navigation between New Summary and Library. Toggled via the top bar's
+     hamburger icon; collapsing hides it fully so both panes gain width, the
+     top bar remains visible either way.
 2. **User-interaction pane (center)**
    - Forms and actions for the active page.
    - New Summary: URL input; on submit, fetch metadata, show title/channel/duration,
@@ -57,7 +62,12 @@ Single 3-pane shell, no client-side router:
      (paragraph / bullets / chaptered) as each prior step completes.
    - Library: searchable/filterable list of past videos (by title, channel, date);
      selecting one populates the AI-generated pane.
-3. **AI-generated pane (right, tabbed)**
+3. **Resizable divider**
+   - The boundary between the user-interaction pane and the AI-generated pane
+     is draggable, with drag indicators, to resize both columns. Same behavior
+     on both pages; sensible min-widths keep either pane from collapsing to
+     unusable size. Resets on reload, not persisted.
+4. **AI-generated pane (right, tabbed)**
    - Shows generated content for the active video: a Transcript tab and a
      Summary tab (reflecting the currently-selected/most recent format).
    - Selecting a video from the Library page populates this pane the same way

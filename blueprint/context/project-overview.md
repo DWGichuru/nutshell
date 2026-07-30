@@ -19,8 +19,9 @@ chosen format - turning a long video into a fast, reusable text asset.
 
 Build order below follows `build-plan.md` Phases 1-6 (the MVP loop). Phase 7 is
 cross-cutting hardening applied after the loop works end to end, Phase 8 is
-explicitly optional/future, and Phase 9 is the 3-pane home page redesign - see
-Open questions.
+explicitly optional/future, Phase 9 is the 3-pane home page redesign (complete),
+and Phase 10 adds the collapsible drawer/top bar and resizable pane divider on
+top of that shell - see Open questions.
 
 1. **YouTube audio download** - paste a link, fetch metadata (title/channel/duration),
    warn on long videos with an estimated transcription time, then download the
@@ -112,8 +113,12 @@ Not in v1 - single-user local tool, no billing or accounts.
 
 Single 3-pane shell, no client-side router (vanilla HTML/JS):
 
-- **Drawer (left, persistent)** - navigation between New Summary and Library.
-  Always visible, not collapsible.
+- **Top bar (persistent, above the drawer)** - app logo/wordmark, title, and a
+  hamburger icon that toggles the drawer. Always visible regardless of
+  whether the drawer is open or collapsed.
+- **Drawer (left, collapsible)** - navigation between New Summary and Library.
+  Toggled via the top bar's hamburger icon; collapsing hides it fully so both
+  panes gain width.
 - **User-interaction pane (center)** - forms and actions for the active page:
   - New Summary: URL input; on submit, fetches and shows title/channel/duration,
     with a warning banner and required confirmation if duration exceeds the
@@ -125,6 +130,10 @@ Single 3-pane shell, no client-side router (vanilla HTML/JS):
   - Library: searchable/filterable list of past videos (title/channel/date);
     selecting one populates the AI-generated pane and offers generating a new
     summary format in place, without re-downloading or re-transcribing.
+- **Resizable divider** - the boundary between the user-interaction pane and
+  the AI-generated pane is draggable, with drag indicators, to resize both
+  columns. Same behavior on both pages; sensible min-widths keep either pane
+  from collapsing to unusable size. Resets on reload, not persisted.
 - **AI-generated pane (right, tabbed)** - shows generated content for the
   active video: a Transcript tab and a Summary tab (reflecting the
   currently-selected/most recent format). Selecting a video from the Library
@@ -176,6 +185,11 @@ Local only - no host, no public deployment.
 - `build-plan.md` Phase 9 (3-pane home page redesign: persistent drawer,
   user-interaction pane, tabbed AI-generated pane, with Library unified into
   the same shell) supersedes the "four views" layout described in earlier UI/UX
-  drafts. It is large enough that `/feature` is expected to split it into
-  sub-features (e.g. shell/drawer first, then the interaction pane, then the
-  AI-generated pane, then Library unification) rather than one spec.
+  drafts. It was split into sub-features (9a shell/New Summary, 9b Library
+  unification) and is now complete.
+- `build-plan.md` Phase 10 (resizable interaction/AI-pane divider with drag
+  indicators; collapsible drawer via a hamburger icon, with logo/title/hamburger
+  moved into a persistent top bar above the drawer) reverses Phase 9's "drawer
+  is persistent, not collapsible" decision and adds a new top bar not present
+  in the original 3-pane design. Applies identically to both the New Summary
+  and Library pages, since they already share the same shell built in 9a/9b.

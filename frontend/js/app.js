@@ -31,6 +31,8 @@ const aiPaneContentEl = document.getElementById("ai-pane-content");
 const aiTabTranscriptButton = document.getElementById("ai-tab-transcript");
 const aiTabSummaryButton = document.getElementById("ai-tab-summary");
 
+const drawerToggleButton = document.getElementById("drawer-toggle");
+const drawerEl = document.getElementById("drawer");
 const navNewSummaryButton = document.getElementById("nav-new-summary");
 const navLibraryButton = document.getElementById("nav-library");
 const newSummaryView = document.getElementById("new-summary-view");
@@ -487,6 +489,12 @@ function formatDate(isoString) {
   return date.toLocaleDateString();
 }
 
+function toggleDrawer() {
+  const isCollapsing = !drawerEl.classList.contains("hidden");
+  drawerEl.classList.toggle("hidden", isCollapsing);
+  drawerToggleButton.setAttribute("aria-expanded", String(!isCollapsing));
+}
+
 function showNewSummaryView() {
   newSummaryView.classList.remove("hidden");
   libraryView.classList.add("hidden");
@@ -717,6 +725,7 @@ async function startLibrarySummarization() {
   }
 }
 
+drawerToggleButton.addEventListener("click", toggleDrawer);
 navNewSummaryButton.addEventListener("click", showNewSummaryView);
 navLibraryButton.addEventListener("click", showLibraryView);
 libraryFilterButton.addEventListener("click", fetchVideos);
