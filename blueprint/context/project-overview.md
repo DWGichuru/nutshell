@@ -37,11 +37,11 @@ top of that shell - see Open questions.
    `{text, segments}` from either on-device `mlx-whisper` or the OpenAI Whisper
    API, user-selectable per run, with a method-aware progress indicator.
 5. **AI summarization** - send the transcript to a configured AI provider and
-   generate a summary in a user-picked format (paragraph, bullets, or
-   timestamped/chaptered), saved alongside the transcript.
+   generate a structured, timestamped summary (context, opening, labeled
+   sections, closing), saved alongside the transcript.
 6. **Library view (search/filter)** - browse past videos by title/channel/date,
-   reload a video's stored transcript and summaries, and generate new summary
-   formats without re-downloading or re-transcribing.
+   reload a video's stored transcript and summaries, and generate a new
+   summary in place without re-downloading or re-transcribing.
 
 ## Data model
 
@@ -68,11 +68,10 @@ Per video, stored under `data/videos/{video_id}/`:
 - `method` (enum: `"local"` | `"api"`) - which transcription adapter produced
   this result
 
-### summaries/{timestamp}\_{format}.md
+### summaries/{timestamp}.md
 
-- One file per summary generation; `format` is one of `paragraph`, `bullets`,
-  `chaptered`. Multiple summary runs per video are all preserved, never
-  overwritten.
+- One file per summary generation. Multiple summary runs per video are all
+  preserved, never overwritten.
 
 ### index.db (`videos` table, at `data/index.db`)
 
@@ -123,22 +122,21 @@ Single 3-pane shell, no client-side router (vanilla HTML/JS):
   - New Summary: URL input; on submit, fetches and shows title/channel/duration,
     with a warning banner and required confirmation if duration exceeds the
     threshold (default 60 min); then sequentially reveals waveform trim
-    controls (drag handles, preview playback), transcription method picker
-    (Local vs API, with a cost note for API, method-aware progress indicator),
-    and summary format picker (paragraph/bullets/chaptered) as each prior step
-    completes.
+    controls (drag handles, preview playback) and transcription method picker
+    (Local vs API, with a cost note for API, method-aware progress indicator)
+    as each prior step completes, then a Summarize action.
   - Library: searchable/filterable list of past videos (title/channel/date);
     selecting one populates the AI-generated pane and offers generating a new
-    summary format in place, without re-downloading or re-transcribing.
+    summary in place, without re-downloading or re-transcribing.
 - **Resizable divider** - the boundary between the user-interaction pane and
   the AI-generated pane is draggable, with drag indicators, to resize both
   columns. Same behavior on both pages; sensible min-widths keep either pane
   from collapsing to unusable size. Resets on reload, not persisted.
 - **AI-generated pane (right, tabbed)** - shows generated content for the
-  active video: a Transcript tab and a Summary tab (reflecting the
-  currently-selected/most recent format). Selecting a video from the Library
-  page populates this pane the same way a fresh New Summary run does, so both
-  pages share one content surface.
+  active video: a Transcript tab and a Summary tab (reflecting the most
+  recent summary). Selecting a video from the Library page populates this
+  pane the same way a fresh New Summary run does, so both pages share one
+  content surface.
 
 ### Design
 

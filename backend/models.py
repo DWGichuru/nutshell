@@ -71,7 +71,6 @@ class TranscriptionStatusResponse(BaseModel):
 
 
 class SummarizeRequest(BaseModel):
-    format: Literal["paragraph", "bullets", "chaptered"]
     provider: Literal["anthropic", "openai"] = "anthropic"
 
 
@@ -86,7 +85,6 @@ class SummarizationStatusResponse(BaseModel):
 
 
 class SummaryEntryModel(BaseModel):
-    format: str
     created_at: str
     content: str
 

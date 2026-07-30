@@ -2,12 +2,12 @@ import os
 
 from openai import OpenAI
 
-from backend.adapters.summarization.base import SummarizationError, SummaryFormat, SummaryInput, build_prompt
+from backend.adapters.summarization.base import SummarizationError, SummaryInput, build_prompt
 
 MODEL = "gpt-4o-mini"
 
 
-def summarize(input: SummaryInput, format: SummaryFormat) -> str:
+def summarize(input: SummaryInput) -> str:
     api_key = os.getenv("OPENAI_API_KEY")
     if not api_key:
         raise SummarizationError("OPENAI_API_KEY is not set")
@@ -16,7 +16,7 @@ def summarize(input: SummaryInput, format: SummaryFormat) -> str:
     try:
         response = client.chat.completions.create(
             model=MODEL,
-            messages=[{"role": "user", "content": build_prompt(input, format)}],
+            messages=[{"role": "user", "content": build_prompt(input)}],
         )
     except Exception as exc:
         raise SummarizationError(f"OpenAI summarization failed: {exc}") from exc

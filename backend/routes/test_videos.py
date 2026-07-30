@@ -375,12 +375,12 @@ def test_summarize_success(monkeypatch, tmp_path):
     _write_video(tmp_path, "abc123")
     _write_transcript(tmp_path, "abc123")
 
-    def fake_summarize(input, format):
-        return f"# {format} summary"
+    def fake_summarize(input):
+        return "# summary"
 
     monkeypatch.setattr("backend.routes.videos.summarize_anthropic", fake_summarize)
 
-    response = client.post("/api/videos/abc123/summarize", json={"format": "bullets"})
+    response = client.post("/api/videos/abc123/summarize", json={})
 
     assert response.status_code == 200
     body = response.json()
@@ -395,20 +395,19 @@ def test_summarize_success(monkeypatch, tmp_path):
     assert list_response.status_code == 200
     summaries = list_response.json()["summaries"]
     assert len(summaries) == 1
-    assert summaries[0]["format"] == "bullets"
-    assert summaries[0]["content"] == "# bullets summary"
+    assert summaries[0]["content"] == "# summary"
 
 
 def test_summarize_openai_provider_success(monkeypatch, tmp_path):
     _write_video(tmp_path, "abc123")
     _write_transcript(tmp_path, "abc123")
 
-    def fake_summarize(input, format):
-        return f"# openai {format} summary"
+    def fake_summarize(input):
+        return "# openai summary"
 
     monkeypatch.setattr("backend.routes.videos.summarize_openai", fake_summarize)
 
-    response = client.post("/api/videos/abc123/summarize", json={"format": "paragraph", "provider": "openai"})
+    response = client.post("/api/videos/abc123/summarize", json={"provider": "openai"})
 
     assert response.status_code == 200
 
@@ -417,13 +416,13 @@ def test_summarize_openai_provider_success(monkeypatch, tmp_path):
 
     list_response = client.get("/api/videos/abc123/summaries")
     summaries = list_response.json()["summaries"]
-    assert summaries[0]["content"] == "# openai paragraph summary"
+    assert summaries[0]["content"] == "# openai summary"
 
 
 def test_summarize_unknown_transcript_returns_404(tmp_path):
     _write_video(tmp_path, "abc123")
 
-    response = client.post("/api/videos/abc123/summarize", json={"format": "paragraph"})
+    response = client.post("/api/videos/abc123/summarize", json={})
 
     assert response.status_code == 404
 
@@ -432,12 +431,12 @@ def test_summarize_failure_sets_error_status(monkeypatch, tmp_path):
     _write_video(tmp_path, "abc123")
     _write_transcript(tmp_path, "abc123")
 
-    def fake_summarize(input, format):
+    def fake_summarize(input):
         raise RuntimeError("anthropic boom")
 
     monkeypatch.setattr("backend.routes.videos.summarize_anthropic", fake_summarize)
 
-    response = client.post("/api/videos/abc123/summarize", json={"format": "paragraph"})
+    response = client.post("/api/videos/abc123/summarize", json={})
     assert response.status_code == 200
 
     status_response = client.get("/api/videos/abc123/summarization/status")

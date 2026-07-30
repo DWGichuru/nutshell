@@ -48,7 +48,6 @@ def read_transcript(video_id: str) -> Transcript:
 
 @dataclass
 class SummaryEntry:
-    format: str
     created_at: str
     content: str
 
@@ -59,20 +58,17 @@ def summaries_dir(video_id: str) -> Path:
     return path
 
 
-def write_summary(video_id: str, format: str, content: str) -> Path:
+def write_summary(video_id: str, content: str) -> Path:
     timestamp = datetime.now(UTC).strftime(SUMMARY_TIMESTAMP_FORMAT)
-    path = summaries_dir(video_id) / f"{timestamp}_{format}.md"
+    path = summaries_dir(video_id) / f"{timestamp}.md"
     path.write_text(content)
     return path
 
 
 def list_summaries(video_id: str) -> list[SummaryEntry]:
     dir_path = DATA_ROOT / video_id / "summaries"
-    entries = []
-    for path in dir_path.glob("*.md"):
-        timestamp, _, format_with_ext = path.stem.partition("_")
-        entries.append(
-            SummaryEntry(format=format_with_ext, created_at=timestamp, content=path.read_text())
-        )
+    entries = [
+        SummaryEntry(created_at=path.stem, content=path.read_text()) for path in dir_path.glob("*.md")
+    ]
     entries.sort(key=lambda entry: entry.created_at, reverse=True)
     return entries

@@ -235,7 +235,7 @@ def get_transcript(video_id: str) -> Transcript:
         raise HTTPException(status_code=404, detail="Transcript not found for video_id") from exc
 
 
-def _run_summarization(video_id: str, format: str, provider: str, transcript: Transcript) -> None:
+def _run_summarization(video_id: str, provider: str, transcript: Transcript) -> None:
     _summarization_status[video_id] = {"status": "summarizing", "error": None}
     try:
         summary_input = SummaryInput(
@@ -246,8 +246,8 @@ def _run_summarization(video_id: str, format: str, provider: str, transcript: Tr
             ],
         )
         adapter = summarize_openai if provider == "openai" else summarize_anthropic
-        content = adapter(summary_input, format)
-        write_summary(video_id, format, content)
+        content = adapter(summary_input)
+        write_summary(video_id, content)
         _summarization_status[video_id] = {"status": "done", "error": None}
     except Exception as exc:
         _summarization_status[video_id] = {"status": "error", "error": str(exc)}
@@ -263,7 +263,7 @@ def start_summarization(
         raise HTTPException(status_code=404, detail="Transcript not found for video_id") from exc
 
     _summarization_status[video_id] = {"status": "pending", "error": None}
-    background_tasks.add_task(_run_summarization, video_id, request.format, request.provider, transcript)
+    background_tasks.add_task(_run_summarization, video_id, request.provider, transcript)
 
     return SummarizationStartedResponse(video_id=video_id, status="pending")
 
@@ -286,7 +286,6 @@ def get_summaries(video_id: str) -> SummaryListResponse:
     entries = list_summaries(video_id)
     return SummaryListResponse(
         summaries=[
-            SummaryEntryModel(format=entry.format, created_at=entry.created_at, content=entry.content)
-            for entry in entries
+            SummaryEntryModel(created_at=entry.created_at, content=entry.content) for entry in entries
         ]
     )

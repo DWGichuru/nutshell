@@ -17,18 +17,17 @@ def sample_input():
     )
 
 
-@pytest.mark.parametrize("format", ["paragraph", "bullets", "chaptered"])
-def test_summarize_returns_response_text(monkeypatch, sample_input, format):
-    response = FakeMessage(content=[FakeTextBlock(text=f"# {format} summary")])
+def test_summarize_returns_response_text(monkeypatch, sample_input):
+    response = FakeMessage(content=[FakeTextBlock(text="# summary")])
     monkeypatch.setenv("ANTHROPIC_API_KEY", "test-key")
     monkeypatch.setattr(anthropic_api, "Anthropic", lambda api_key: FakeAnthropic(response=response))
 
-    result = anthropic_api.summarize(sample_input, format)
+    result = anthropic_api.summarize(sample_input)
 
-    assert result == f"# {format} summary"
+    assert result == "# summary"
 
 
-def test_summarize_chaptered_includes_timestamps_in_prompt(monkeypatch, sample_input):
+def test_summarize_includes_timestamps_when_segments_present(monkeypatch, sample_input):
     captured = {}
 
     class CapturingMessages:
@@ -42,9 +41,29 @@ def test_summarize_chaptered_includes_timestamps_in_prompt(monkeypatch, sample_i
     monkeypatch.setenv("ANTHROPIC_API_KEY", "test-key")
     monkeypatch.setattr(anthropic_api, "Anthropic", lambda api_key: CapturingClient())
 
-    anthropic_api.summarize(sample_input, "chaptered")
+    anthropic_api.summarize(sample_input)
 
     assert "1:05" in captured["prompt"]
+
+
+def test_summarize_falls_back_to_plain_text_without_segments(monkeypatch):
+    input_without_segments = SummaryInput(text="hello world, this is a test transcript.", segments=[])
+    captured = {}
+
+    class CapturingMessages:
+        def create(self, **kwargs):
+            captured["prompt"] = kwargs["messages"][0]["content"]
+            return FakeMessage(content=[FakeTextBlock(text="ok")])
+
+    class CapturingClient:
+        messages = CapturingMessages()
+
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "test-key")
+    monkeypatch.setattr(anthropic_api, "Anthropic", lambda api_key: CapturingClient())
+
+    anthropic_api.summarize(input_without_segments)
+
+    assert "hello world, this is a test transcript." in captured["prompt"]
 
 
 def test_summarize_missing_api_key_raises_before_client(monkeypatch, sample_input):
@@ -56,7 +75,7 @@ def test_summarize_missing_api_key_raises_before_client(monkeypatch, sample_inpu
     monkeypatch.setattr(anthropic_api, "Anthropic", fail_if_called)
 
     with pytest.raises(SummarizationError, match="ANTHROPIC_API_KEY"):
-        anthropic_api.summarize(sample_input, "paragraph")
+        anthropic_api.summarize(sample_input)
 
 
 def test_summarize_api_failure_raises_summarization_error(monkeypatch, sample_input):
@@ -71,4 +90,4 @@ def test_summarize_api_failure_raises_summarization_error(monkeypatch, sample_in
     monkeypatch.setattr(anthropic_api, "Anthropic", lambda api_key: BoomClient())
 
     with pytest.raises(SummarizationError, match="network boom"):
-        anthropic_api.summarize(sample_input, "paragraph")
+        anthropic_api.summarize(sample_input)

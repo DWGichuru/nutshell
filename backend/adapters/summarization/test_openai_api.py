@@ -22,20 +22,17 @@ def sample_input():
     )
 
 
-@pytest.mark.parametrize("format", ["paragraph", "bullets", "chaptered"])
-def test_summarize_returns_response_text(monkeypatch, sample_input, format):
-    response = FakeChatCompletion(
-        choices=[FakeChatChoice(message=FakeChatMessage(content=f"# {format} summary"))]
-    )
+def test_summarize_returns_response_text(monkeypatch, sample_input):
+    response = FakeChatCompletion(choices=[FakeChatChoice(message=FakeChatMessage(content="# summary"))])
     monkeypatch.setenv("OPENAI_API_KEY", "test-key")
     monkeypatch.setattr(openai_api, "OpenAI", lambda api_key: FakeOpenAIClient(response=response))
 
-    result = openai_api.summarize(sample_input, format)
+    result = openai_api.summarize(sample_input)
 
-    assert result == f"# {format} summary"
+    assert result == "# summary"
 
 
-def test_summarize_chaptered_includes_timestamps_in_prompt(monkeypatch, sample_input):
+def test_summarize_includes_timestamps_when_segments_present(monkeypatch, sample_input):
     captured = {}
 
     class CapturingCompletions:
@@ -53,9 +50,33 @@ def test_summarize_chaptered_includes_timestamps_in_prompt(monkeypatch, sample_i
     monkeypatch.setenv("OPENAI_API_KEY", "test-key")
     monkeypatch.setattr(openai_api, "OpenAI", lambda api_key: CapturingClient())
 
-    openai_api.summarize(sample_input, "chaptered")
+    openai_api.summarize(sample_input)
 
     assert "1:05" in captured["prompt"]
+
+
+def test_summarize_falls_back_to_plain_text_without_segments(monkeypatch):
+    input_without_segments = SummaryInput(text="hello world, this is a test transcript.", segments=[])
+    captured = {}
+
+    class CapturingCompletions:
+        def create(self, **kwargs):
+            captured["prompt"] = kwargs["messages"][0]["content"]
+            response = FakeChatCompletion(choices=[FakeChatChoice(message=FakeChatMessage(content="ok"))])
+            return response
+
+    class CapturingChat:
+        completions = CapturingCompletions()
+
+    class CapturingClient:
+        chat = CapturingChat()
+
+    monkeypatch.setenv("OPENAI_API_KEY", "test-key")
+    monkeypatch.setattr(openai_api, "OpenAI", lambda api_key: CapturingClient())
+
+    openai_api.summarize(input_without_segments)
+
+    assert "hello world, this is a test transcript." in captured["prompt"]
 
 
 def test_summarize_missing_api_key_raises_before_client(monkeypatch, sample_input):
@@ -67,7 +88,7 @@ def test_summarize_missing_api_key_raises_before_client(monkeypatch, sample_inpu
     monkeypatch.setattr(openai_api, "OpenAI", fail_if_called)
 
     with pytest.raises(SummarizationError, match="OPENAI_API_KEY"):
-        openai_api.summarize(sample_input, "paragraph")
+        openai_api.summarize(sample_input)
 
 
 def test_summarize_api_failure_raises_summarization_error(monkeypatch, sample_input):
@@ -85,4 +106,4 @@ def test_summarize_api_failure_raises_summarization_error(monkeypatch, sample_in
     monkeypatch.setattr(openai_api, "OpenAI", lambda api_key: BoomClient())
 
     with pytest.raises(SummarizationError, match="network boom"):
-        openai_api.summarize(sample_input, "paragraph")
+        openai_api.summarize(sample_input)

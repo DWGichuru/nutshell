@@ -428,7 +428,6 @@ async function showLatestSummary(videoId) {
 
 async function startSummarization() {
   const videoId = summarizeSection.dataset.videoId;
-  const format = document.querySelector('input[name="summary-format"]:checked').value;
   const provider = document.querySelector('input[name="summary-provider"]:checked').value;
 
   setSummarizeError(null);
@@ -441,7 +440,7 @@ async function startSummarization() {
     const response = await fetch(`/api/videos/${videoId}/summarize`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ format, provider }),
+      body: JSON.stringify({ provider }),
     });
 
     if (!response.ok) {
@@ -680,7 +679,7 @@ async function showLibrarySummaries(videoId) {
     wrapper.className = "rounded bg-cream p-4 dark:bg-espresso/40";
     const heading = document.createElement("p");
     heading.className = "mb-2 text-sm font-medium text-terracotta";
-    heading.textContent = `${summary.format} - ${summary.created_at}`;
+    heading.textContent = summary.created_at;
     const content = document.createElement("pre");
     content.className = "whitespace-pre-wrap text-sm";
     content.textContent = summary.content;
@@ -730,7 +729,6 @@ async function pollLibrarySummarizationStatus(videoId) {
 
 async function startLibrarySummarization() {
   const videoId = libraryDetailSection.dataset.videoId;
-  const format = document.querySelector('input[name="library-summary-format"]:checked').value;
   const provider = document.querySelector('input[name="library-summary-provider"]:checked').value;
 
   setLibrarySummarizeError(null);
@@ -742,7 +740,7 @@ async function startLibrarySummarization() {
     const response = await fetch(`/api/videos/${videoId}/summarize`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ format, provider }),
+      body: JSON.stringify({ provider }),
     });
 
     if (!response.ok) {
