@@ -1,3 +1,5 @@
+import anthropic
+import httpx
 import pytest
 
 from backend.adapters.summarization import anthropic_api
@@ -75,6 +77,24 @@ def test_summarize_missing_api_key_raises_before_client(monkeypatch, sample_inpu
     monkeypatch.setattr(anthropic_api, "Anthropic", fail_if_called)
 
     with pytest.raises(SummarizationError, match="ANTHROPIC_API_KEY"):
+        anthropic_api.summarize(sample_input)
+
+
+def test_summarize_invalid_api_key_raises_friendly_message(monkeypatch, sample_input):
+    request = httpx.Request("POST", "https://api.anthropic.com/v1/messages")
+    response = httpx.Response(status_code=401, request=request)
+
+    class UnauthorizedMessages:
+        def create(self, **kwargs):
+            raise anthropic.AuthenticationError("invalid x-api-key", response=response, body=None)
+
+    class UnauthorizedClient:
+        messages = UnauthorizedMessages()
+
+    monkeypatch.setenv("ANTHROPIC_API_KEY", "bad-key")
+    monkeypatch.setattr(anthropic_api, "Anthropic", lambda api_key: UnauthorizedClient())
+
+    with pytest.raises(SummarizationError, match="Invalid Anthropic API key"):
         anthropic_api.summarize(sample_input)
 
 

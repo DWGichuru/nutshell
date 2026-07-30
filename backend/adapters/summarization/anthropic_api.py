@@ -1,6 +1,6 @@
 import os
 
-from anthropic import Anthropic
+from anthropic import Anthropic, AuthenticationError
 
 from backend.adapters.summarization.base import SummarizationError, SummaryInput, build_prompt
 
@@ -19,6 +19,8 @@ def summarize(input: SummaryInput) -> str:
             max_tokens=4096,
             messages=[{"role": "user", "content": build_prompt(input)}],
         )
+    except AuthenticationError as exc:
+        raise SummarizationError("Invalid Anthropic API key. Check your .env file.") from exc
     except Exception as exc:
         raise SummarizationError(f"Anthropic summarization failed: {exc}") from exc
 

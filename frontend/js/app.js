@@ -116,28 +116,35 @@ function setError(message) {
 }
 
 async function pollDownloadStatus(videoId) {
-  const response = await fetch(`/api/videos/${videoId}/status`);
-  if (!response.ok) {
-    throw new Error("Unable to check download status.");
-  }
-  const body = await response.json();
+  try {
+    const response = await fetch(`/api/videos/${videoId}/status`);
+    if (!response.ok) {
+      throw new Error("Unable to check download status.");
+    }
+    const body = await response.json();
 
-  if (body.status === "done") {
+    if (body.status === "done") {
+      setSpinner(downloadSpinnerEl, false);
+      setStatus("Download complete.");
+      onVideoReady(videoId);
+      return;
+    }
+    if (body.status === "error") {
+      setSpinner(downloadSpinnerEl, false);
+      setError(body.error || "Download failed.");
+      setStatus("");
+      downloadButton.disabled = false;
+      return;
+    }
+
+    setStatus(`Status: ${body.status}...`);
+    setTimeout(() => pollDownloadStatus(videoId), STATUS_POLL_INTERVAL_MS);
+  } catch (err) {
     setSpinner(downloadSpinnerEl, false);
-    setStatus("Download complete.");
-    onVideoReady(videoId);
-    return;
-  }
-  if (body.status === "error") {
-    setSpinner(downloadSpinnerEl, false);
-    setError(body.error || "Download failed.");
+    setError(err.message);
     setStatus("");
     downloadButton.disabled = false;
-    return;
   }
-
-  setStatus(`Status: ${body.status}...`);
-  setTimeout(() => pollDownloadStatus(videoId), STATUS_POLL_INTERVAL_MS);
 }
 
 function showAiPaneContent() {
@@ -332,29 +339,36 @@ function setTranscribeError(message) {
 }
 
 async function pollTranscriptionStatus(videoId) {
-  const response = await fetch(`/api/videos/${videoId}/transcription/status`);
-  if (!response.ok) {
-    throw new Error("Unable to check transcription status.");
-  }
-  const body = await response.json();
+  try {
+    const response = await fetch(`/api/videos/${videoId}/transcription/status`);
+    if (!response.ok) {
+      throw new Error("Unable to check transcription status.");
+    }
+    const body = await response.json();
 
-  if (body.status === "done") {
+    if (body.status === "done") {
+      setSpinner(transcribeSpinnerEl, false);
+      transcribeStatusEl.textContent = "Transcription complete.";
+      showTranscript(videoId);
+      transcribeButton.disabled = false;
+      return;
+    }
+    if (body.status === "error") {
+      setSpinner(transcribeSpinnerEl, false);
+      setTranscribeError(body.error || "Transcription failed.");
+      transcribeStatusEl.textContent = "";
+      transcribeButton.disabled = false;
+      return;
+    }
+
+    transcribeStatusEl.textContent = `Status: ${body.status}...`;
+    setTimeout(() => pollTranscriptionStatus(videoId), STATUS_POLL_INTERVAL_MS);
+  } catch (err) {
     setSpinner(transcribeSpinnerEl, false);
-    transcribeStatusEl.textContent = "Transcription complete.";
-    showTranscript(videoId);
-    transcribeButton.disabled = false;
-    return;
-  }
-  if (body.status === "error") {
-    setSpinner(transcribeSpinnerEl, false);
-    setTranscribeError(body.error || "Transcription failed.");
+    setTranscribeError(err.message);
     transcribeStatusEl.textContent = "";
     transcribeButton.disabled = false;
-    return;
   }
-
-  transcribeStatusEl.textContent = `Status: ${body.status}...`;
-  setTimeout(() => pollTranscriptionStatus(videoId), STATUS_POLL_INTERVAL_MS);
 }
 
 async function showTranscript(videoId) {
@@ -388,29 +402,36 @@ function setSummarizeError(message) {
 }
 
 async function pollSummarizationStatus(videoId) {
-  const response = await fetch(`/api/videos/${videoId}/summarization/status`);
-  if (!response.ok) {
-    throw new Error("Unable to check summarization status.");
-  }
-  const body = await response.json();
+  try {
+    const response = await fetch(`/api/videos/${videoId}/summarization/status`);
+    if (!response.ok) {
+      throw new Error("Unable to check summarization status.");
+    }
+    const body = await response.json();
 
-  if (body.status === "done") {
+    if (body.status === "done") {
+      setSpinner(summarizeSpinnerEl, false);
+      summarizeStatusEl.textContent = "Summary complete.";
+      showLatestSummary(videoId);
+      summarizeButton.disabled = false;
+      return;
+    }
+    if (body.status === "error") {
+      setSpinner(summarizeSpinnerEl, false);
+      setSummarizeError(body.error || "Summarization failed.");
+      summarizeStatusEl.textContent = "";
+      summarizeButton.disabled = false;
+      return;
+    }
+
+    summarizeStatusEl.textContent = `Status: ${body.status}...`;
+    setTimeout(() => pollSummarizationStatus(videoId), STATUS_POLL_INTERVAL_MS);
+  } catch (err) {
     setSpinner(summarizeSpinnerEl, false);
-    summarizeStatusEl.textContent = "Summary complete.";
-    showLatestSummary(videoId);
-    summarizeButton.disabled = false;
-    return;
-  }
-  if (body.status === "error") {
-    setSpinner(summarizeSpinnerEl, false);
-    setSummarizeError(body.error || "Summarization failed.");
+    setSummarizeError(err.message);
     summarizeStatusEl.textContent = "";
     summarizeButton.disabled = false;
-    return;
   }
-
-  summarizeStatusEl.textContent = `Status: ${body.status}...`;
-  setTimeout(() => pollSummarizationStatus(videoId), STATUS_POLL_INTERVAL_MS);
 }
 
 async function showLatestSummary(videoId) {
@@ -700,31 +721,39 @@ function setLibrarySummarizeError(message) {
 }
 
 async function pollLibrarySummarizationStatus(videoId) {
-  const response = await fetch(`/api/videos/${videoId}/summarization/status`);
-  if (videoId !== currentLibraryVideoId) return;
-  if (!response.ok) {
-    throw new Error("Unable to check summarization status.");
-  }
-  const body = await response.json();
-  if (videoId !== currentLibraryVideoId) return;
+  try {
+    const response = await fetch(`/api/videos/${videoId}/summarization/status`);
+    if (videoId !== currentLibraryVideoId) return;
+    if (!response.ok) {
+      throw new Error("Unable to check summarization status.");
+    }
+    const body = await response.json();
+    if (videoId !== currentLibraryVideoId) return;
 
-  if (body.status === "done") {
+    if (body.status === "done") {
+      setSpinner(librarySummarizeSpinnerEl, false);
+      librarySummarizeStatusEl.textContent = "Summary complete.";
+      await showLibrarySummaries(videoId);
+      librarySummarizeButton.disabled = false;
+      return;
+    }
+    if (body.status === "error") {
+      setSpinner(librarySummarizeSpinnerEl, false);
+      setLibrarySummarizeError(body.error || "Summarization failed.");
+      librarySummarizeStatusEl.textContent = "";
+      librarySummarizeButton.disabled = false;
+      return;
+    }
+
+    librarySummarizeStatusEl.textContent = `Status: ${body.status}...`;
+    setTimeout(() => pollLibrarySummarizationStatus(videoId), STATUS_POLL_INTERVAL_MS);
+  } catch (err) {
+    if (videoId !== currentLibraryVideoId) return;
     setSpinner(librarySummarizeSpinnerEl, false);
-    librarySummarizeStatusEl.textContent = "Summary complete.";
-    await showLibrarySummaries(videoId);
-    librarySummarizeButton.disabled = false;
-    return;
-  }
-  if (body.status === "error") {
-    setSpinner(librarySummarizeSpinnerEl, false);
-    setLibrarySummarizeError(body.error || "Summarization failed.");
+    setLibrarySummarizeError(err.message);
     librarySummarizeStatusEl.textContent = "";
     librarySummarizeButton.disabled = false;
-    return;
   }
-
-  librarySummarizeStatusEl.textContent = `Status: ${body.status}...`;
-  setTimeout(() => pollLibrarySummarizationStatus(videoId), STATUS_POLL_INTERVAL_MS);
 }
 
 async function startLibrarySummarization() {

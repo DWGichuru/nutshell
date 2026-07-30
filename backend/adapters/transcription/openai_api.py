@@ -1,7 +1,7 @@
 import os
 from pathlib import Path
 
-from openai import OpenAI
+from openai import AuthenticationError, OpenAI
 
 from backend.adapters.transcription.base import TranscriptionError, TranscriptResult, TranscriptSegment
 
@@ -19,6 +19,8 @@ def transcribe(audio_path: Path) -> TranscriptResult:
                 file=audio_file,
                 response_format="verbose_json",
             )
+    except AuthenticationError as exc:
+        raise TranscriptionError("Invalid OpenAI API key. Check your .env file.") from exc
     except Exception as exc:
         raise TranscriptionError(f"OpenAI transcription failed: {exc}") from exc
 

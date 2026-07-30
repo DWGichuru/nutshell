@@ -1,3 +1,5 @@
+import httpx
+import openai
 import pytest
 
 from backend.adapters.summarization import openai_api
@@ -88,6 +90,27 @@ def test_summarize_missing_api_key_raises_before_client(monkeypatch, sample_inpu
     monkeypatch.setattr(openai_api, "OpenAI", fail_if_called)
 
     with pytest.raises(SummarizationError, match="OPENAI_API_KEY"):
+        openai_api.summarize(sample_input)
+
+
+def test_summarize_invalid_api_key_raises_friendly_message(monkeypatch, sample_input):
+    request = httpx.Request("POST", "https://api.openai.com/v1/chat/completions")
+    response = httpx.Response(status_code=401, request=request)
+
+    class UnauthorizedCompletions:
+        def create(self, **kwargs):
+            raise openai.AuthenticationError("Incorrect API key provided", response=response, body=None)
+
+    class UnauthorizedChat:
+        completions = UnauthorizedCompletions()
+
+    class UnauthorizedClient:
+        chat = UnauthorizedChat()
+
+    monkeypatch.setenv("OPENAI_API_KEY", "bad-key")
+    monkeypatch.setattr(openai_api, "OpenAI", lambda api_key: UnauthorizedClient())
+
+    with pytest.raises(SummarizationError, match="Invalid OpenAI API key"):
         openai_api.summarize(sample_input)
 
 

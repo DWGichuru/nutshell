@@ -1,6 +1,6 @@
 import os
 
-from openai import OpenAI
+from openai import AuthenticationError, OpenAI
 
 from backend.adapters.summarization.base import SummarizationError, SummaryInput, build_prompt
 
@@ -18,6 +18,8 @@ def summarize(input: SummaryInput) -> str:
             model=MODEL,
             messages=[{"role": "user", "content": build_prompt(input)}],
         )
+    except AuthenticationError as exc:
+        raise SummarizationError("Invalid OpenAI API key. Check your .env file.") from exc
     except Exception as exc:
         raise SummarizationError(f"OpenAI summarization failed: {exc}") from exc
 

@@ -1,3 +1,5 @@
+import httpx
+import openai
 import pytest
 
 from backend.adapters.transcription import openai_api
@@ -36,6 +38,29 @@ def test_transcribe_missing_api_key_raises_before_client(monkeypatch, tmp_path):
     monkeypatch.setattr(openai_api, "OpenAI", fail_if_called)
 
     with pytest.raises(TranscriptionError, match="OPENAI_API_KEY"):
+        openai_api.transcribe(audio_path)
+
+
+def test_transcribe_invalid_api_key_raises_friendly_message(monkeypatch, tmp_path):
+    audio_path = tmp_path / "audio.mp3"
+    audio_path.write_bytes(b"fake-audio")
+    request = httpx.Request("POST", "https://api.openai.com/v1/audio/transcriptions")
+    response = httpx.Response(status_code=401, request=request)
+
+    class UnauthorizedTranscriptions:
+        def create(self, **kwargs):
+            raise openai.AuthenticationError("Incorrect API key provided", response=response, body=None)
+
+    class UnauthorizedAudio:
+        transcriptions = UnauthorizedTranscriptions()
+
+    class UnauthorizedClient:
+        audio = UnauthorizedAudio()
+
+    monkeypatch.setenv("OPENAI_API_KEY", "bad-key")
+    monkeypatch.setattr(openai_api, "OpenAI", lambda api_key: UnauthorizedClient())
+
+    with pytest.raises(TranscriptionError, match="Invalid OpenAI API key"):
         openai_api.transcribe(audio_path)
 
 

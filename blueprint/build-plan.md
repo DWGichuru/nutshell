@@ -63,7 +63,7 @@ Sequential checklist for building the app. Each phase builds on the previous one
 - [x] Handle very short clips / silence (transcription edge cases)
 - [x] Add loading states/spinners for download, transcription, and summarization steps
 - [x] Confirm Tailwind styling is consistent across all views
-- [ ] Add basic error messages/toasts for failed API calls (e.g. missing/invalid API key)
+- [x] Add basic error messages/toasts for failed API calls (e.g. missing/invalid API key)
 - [ ] Final end-to-end test: full flow from URL input to saved summary, then reload from library
 
 ## Phase 8 (Optional / Future)
@@ -81,3 +81,4 @@ Sequential checklist for building the app. Each phase builds on the previous one
 - [x] 10. Make the interaction pane / AI-generated pane divider draggable to resize both columns, with drag indicators on the divider. Make the drawer collapsible via a hamburger icon; move the logo, title, and hamburger into a persistent top bar above the drawer so they stay accessible when it's collapsed.
   - [x] 10a. Collapsible drawer + persistent top bar - hamburger toggle, logo/title/hamburger moved into a top bar above the drawer, drawer hides fully when collapsed.
   - [x] 10b. Draggable resize divider - draggable interaction-pane/AI-pane boundary with drag indicators, applied to both New Summary and Library.
+
