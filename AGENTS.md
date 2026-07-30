@@ -104,7 +104,7 @@ checks do not make the Blueprint unusable.
 
 ## Commands
 
-Python + FastAPI project. Activate the virtual environment first: `source venv/bin/activate`.
+Python + FastAPI backend. Activate the virtual environment first: `source venv/bin/activate`.
 
 - Install deps: `pip install -r requirements.txt`
 - Dev server: `uvicorn backend.main:app --reload` (http://localhost:8000)
@@ -112,5 +112,16 @@ Python + FastAPI project. Activate the virtual environment first: `source venv/b
 - Browser check: Playwright (Python) is installed for browser verification; Chromium is
   already downloaded (`playwright install chromium`).
 
-Tests are configured (pytest) - a build step that adds in-scope logic must ship
-a passing test in the same diff, per `coding-standards.md`.
+React + TypeScript frontend, in `frontend-react/` during the Phase 11 rewrite
+(will become `frontend/` at cutover). Run commands from that directory.
+
+- Install deps: `npm install`
+- Dev server: `npm run dev` (http://localhost:5173, proxies `/api` to the
+  FastAPI dev server on `:8000`)
+- Build: `npm run build`
+- Test: `npm test`
+- Lint: `npm run lint`
+
+Tests are configured (pytest for the backend, Vitest for the frontend's pure
+logic) - a build step that adds in-scope logic must ship a passing test in the
+same diff, per `coding-standards.md`.

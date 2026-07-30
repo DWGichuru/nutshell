@@ -41,7 +41,7 @@ Additionally:
 - **Transcription:** mlx-whisper (local, Metal-accelerated) or OpenAI Whisper API — user-selectable per run, sharing a common adapter interface
 - **Summarization:** Adapter pattern supporting multiple AI providers (e.g. Anthropic, OpenAI), API key loaded from `.env` via `python-dotenv`
 - **Index/search:** SQLite (Python stdlib `sqlite3`, no ORM)
-- **Frontend:** HTML/JS, Tailwind CSS (via CDN, no build step), wavesurfer.js for waveform visualization/trimming
+- **Frontend:** React + TypeScript (Vite build), Tailwind CSS, wavesurfer.js for waveform visualization/trimming
 - **Deployment:** Local only — FastAPI dev server, accessed at `localhost`
 
 ## UI/UX Flow

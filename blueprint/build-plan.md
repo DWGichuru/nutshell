@@ -82,3 +82,28 @@ Sequential checklist for building the app. Each phase builds on the previous one
   - [x] 10a. Collapsible drawer + persistent top bar - hamburger toggle, logo/title/hamburger moved into a top bar above the drawer, drawer hides fully when collapsed.
   - [x] 10b. Draggable resize divider - draggable interaction-pane/AI-pane boundary with drag indicators, applied to both New Summary and Library.
 
+## Phase 11: Frontend Rewrite (React + TypeScript)
+- [ ] 11. Rewrite the frontend as a React + TypeScript app (Vite build), replacing the
+      current vanilla HTML/JS + Tailwind CDN frontend with full behavioral parity,
+      plus closing three latent gaps: a working dark-mode toggle, a pre-download
+      metadata preview step, and the existing wordmark/favicon assets applied to the UI.
+  - [x] 11a. Scaffold + shared hooks/components - Vite + React + TS + Tailwind v3
+        setup (ported palette/darkMode config) in a new `frontend-react/` dir,
+        dev-proxy to FastAPI, Vitest setup, typed API client + pure lib helpers
+        (formatTime/formatDate/pane-math/polling), and the shared TopBar/Drawer
+        empty shell plus Tabs/AsyncStatus/ResizablePane components.
+  - [ ] 11b. New Summary flow - metadata preview (new `POST /api/videos/metadata`
+        wiring), download, waveform trim, transcription method picker, and
+        summarization, each with its polling loop, ported into the new app.
+  - [ ] 11c. Library flow - search/filter/list, row selection with
+        stale-response guarding, video detail (full summary history), and
+        generate-new-summary-in-place.
+  - [ ] 11d. Dark mode toggle + wordmark/favicon assets - wire up the dormant
+        `dark:` styling with a real toggle, and apply the `blueprint/assets/`
+        wordmark/favicon SVGs in place of the plain-text heading.
+  - [ ] 11e. Cutover + regression - build the React app, point `backend/main.py`'s
+        static serving at the build output, delete the old `frontend/index.html`
+        and `frontend/js/`, update `AGENTS.md`/`coding-standards.md`/
+        `project-overview.md` for the new stack, and run a full light/dark
+        regression pass across both flows.
+

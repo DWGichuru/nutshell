@@ -20,8 +20,9 @@ chosen format - turning a long video into a fast, reusable text asset.
 Build order below follows `build-plan.md` Phases 1-6 (the MVP loop). Phase 7 is
 cross-cutting hardening applied after the loop works end to end, Phase 8 is
 explicitly optional/future, Phase 9 is the 3-pane home page redesign (complete),
-and Phase 10 adds the collapsible drawer/top bar and resizable pane divider on
-top of that shell - see Open questions.
+Phase 10 adds the collapsible drawer/top bar and resizable pane divider on top
+of that shell (complete), and Phase 11 rewrites the frontend as React +
+TypeScript with full behavioral parity - see Open questions.
 
 1. **YouTube audio download** - paste a link, fetch metadata (title/channel/duration),
    warn on long videos with an estimated transcription time, then download the
@@ -100,7 +101,7 @@ Per video, stored under `data/videos/{video_id}/`:
 - **Summarization** - adapter pattern over AI providers (e.g. Anthropic,
   OpenAI); API key loaded via `python-dotenv`.
 - **Index/search** - SQLite via Python's stdlib `sqlite3`, no ORM.
-- **Frontend** - HTML/JS + Tailwind CSS via CDN (no build step) +
+- **Frontend** - React + TypeScript (Vite build) + Tailwind CSS +
   wavesurfer.js for waveform visualization/trimming.
 - **Deployment** - local only, FastAPI dev server (`uvicorn`) at `localhost`.
 
@@ -110,7 +111,7 @@ Not in v1 - single-user local tool, no billing or accounts.
 
 ## UI/UX
 
-Single 3-pane shell, no client-side router (vanilla HTML/JS):
+Single 3-pane shell, no client-side router (React + TypeScript):
 
 - **Top bar (persistent, above the drawer)** - app logo/wordmark, title, and a
   hamburger icon that toggles the drawer. Always visible regardless of
@@ -191,3 +192,14 @@ Local only - no host, no public deployment.
   is persistent, not collapsible" decision and adds a new top bar not present
   in the original 3-pane design. Applies identically to both the New Summary
   and Library pages, since they already share the same shell built in 9a/9b.
+- `build-plan.md` Phase 11 (React + TypeScript frontend rewrite) replaces the
+  frontend's implementation only - the 3-pane UI/UX, design palette, and data
+  model above are the unchanged target; only the Tech Stack Frontend line
+  changes (Vite build replacing the CDN/no-build-step setup). It also closes
+  three gaps present in the current vanilla implementation but never
+  documented as shipped: a working dark-mode toggle, a pre-download metadata
+  preview step (using the existing but previously-unused
+  `POST /api/videos/metadata` endpoint), and applying the wordmark/favicon
+  assets from `blueprint/assets/` (previously unused). Until this phase
+  completes, the actual running code is still the vanilla HTML/JS frontend
+  described in past history entries.
