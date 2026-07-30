@@ -37,6 +37,10 @@ const navNewSummaryButton = document.getElementById("nav-new-summary");
 const navLibraryButton = document.getElementById("nav-library");
 const newSummaryView = document.getElementById("new-summary-view");
 const libraryView = document.getElementById("library-view");
+const paneDividerEl = document.getElementById("pane-divider");
+const interactionPaneEl = document.getElementById("interaction-pane");
+const libraryPaneDividerEl = document.getElementById("library-pane-divider");
+const libraryInteractionPaneEl = document.getElementById("library-interaction-pane");
 const librarySearchInput = document.getElementById("library-search");
 const libraryDateFromInput = document.getElementById("library-date-from");
 const libraryDateToInput = document.getElementById("library-date-to");
@@ -71,6 +75,8 @@ const INACTIVE_NAV_CLASSES = [
 ];
 const AI_TAB_ACTIVE_CLASSES = ["bg-cream", "dark:bg-near-black", "text-terracotta"];
 const AI_TAB_INACTIVE_CLASSES = ["text-warm-gray", "hover:text-espresso", "dark:hover:text-cream"];
+const DIVIDER_RESTING_CLASSES = ["bg-warm-gray/30", "hover:bg-terracotta/50", "dark:bg-warm-gray/20", "dark:hover:bg-terracotta/50"];
+const DIVIDER_DRAGGING_CLASSES = ["bg-terracotta", "dark:bg-terracotta"];
 const LIBRARY_ROW_SELECTED_CLASSES = ["rounded", "pl-2", "bg-terracotta/10", "border-l-2", "border-terracotta"];
 
 let wavesurfer = null;
@@ -489,6 +495,34 @@ function formatDate(isoString) {
   return date.toLocaleDateString();
 }
 
+function makeResizablePane(dividerEl, paneEl, containerEl, { minWidth, minRemainder }) {
+  let startX = 0;
+  let startWidth = 0;
+
+  function onPointerMove(event) {
+    const rawWidth = startWidth + (event.clientX - startX);
+    const maxWidth = Math.max(minWidth, containerEl.offsetWidth - minRemainder - dividerEl.offsetWidth);
+    paneEl.style.width = `${Math.min(Math.max(rawWidth, minWidth), maxWidth)}px`;
+  }
+
+  function onPointerUp() {
+    dividerEl.classList.remove(...DIVIDER_DRAGGING_CLASSES);
+    dividerEl.classList.add(...DIVIDER_RESTING_CLASSES);
+    document.removeEventListener("pointermove", onPointerMove);
+    document.removeEventListener("pointerup", onPointerUp);
+  }
+
+  dividerEl.addEventListener("pointerdown", (event) => {
+    startX = event.clientX;
+    startWidth = paneEl.offsetWidth;
+    dividerEl.classList.remove(...DIVIDER_RESTING_CLASSES);
+    dividerEl.classList.add(...DIVIDER_DRAGGING_CLASSES);
+    document.addEventListener("pointermove", onPointerMove);
+    document.addEventListener("pointerup", onPointerUp);
+    event.preventDefault();
+  });
+}
+
 function toggleDrawer() {
   const isCollapsing = !drawerEl.classList.contains("hidden");
   drawerEl.classList.toggle("hidden", isCollapsing);
@@ -724,6 +758,9 @@ async function startLibrarySummarization() {
     librarySummarizeButton.disabled = false;
   }
 }
+
+makeResizablePane(paneDividerEl, interactionPaneEl, newSummaryView, { minWidth: 280, minRemainder: 320 });
+makeResizablePane(libraryPaneDividerEl, libraryInteractionPaneEl, libraryView, { minWidth: 280, minRemainder: 320 });
 
 drawerToggleButton.addEventListener("click", toggleDrawer);
 navNewSummaryButton.addEventListener("click", showNewSummaryView);

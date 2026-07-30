@@ -78,6 +78,6 @@ Sequential checklist for building the app. Each phase builds on the previous one
   - [x] 9b. Unify Library into the shell - move Library's search/filter/results into the interaction pane and its transcript/summaries into the same tabbed AI-generated pane, retiring the old library-detail layout.
 
 ## Phase 10: Resizable Panes & Collapsible Drawer
-- [ ] 10. Make the interaction pane / AI-generated pane divider draggable to resize both columns, with drag indicators on the divider. Make the drawer collapsible via a hamburger icon; move the logo, title, and hamburger into a persistent top bar above the drawer so they stay accessible when it's collapsed.
+- [x] 10. Make the interaction pane / AI-generated pane divider draggable to resize both columns, with drag indicators on the divider. Make the drawer collapsible via a hamburger icon; move the logo, title, and hamburger into a persistent top bar above the drawer so they stay accessible when it's collapsed.
   - [x] 10a. Collapsible drawer + persistent top bar - hamburger toggle, logo/title/hamburger moved into a top bar above the drawer, drawer hides fully when collapsed.
-  - [ ] 10b. Draggable resize divider - draggable interaction-pane/AI-pane boundary with drag indicators, applied to both New Summary and Library.
+  - [x] 10b. Draggable resize divider - draggable interaction-pane/AI-pane boundary with drag indicators, applied to both New Summary and Library.
