@@ -95,7 +95,7 @@ Sequential checklist for building the app. Each phase builds on the previous one
   - [x] 11b. New Summary flow - metadata preview (new `POST /api/videos/metadata`
         wiring), download, waveform trim, transcription method picker, and
         summarization, each with its polling loop, ported into the new app.
-  - [ ] 11c. Library flow - search/filter/list, row selection with
+  - [x] 11c. Library flow - search/filter/list, row selection with
         stale-response guarding, video detail (full summary history), and
         generate-new-summary-in-place.
   - [ ] 11d. Dark mode toggle + wordmark/favicon assets - wire up the dormant

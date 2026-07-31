@@ -1,0 +1,90 @@
+import { useState } from 'react';
+import { startSummarization, getSummarizationStatus } from '../../api/client';
+import type { SummarizationProvider, SummarizationStatusResponse } from '../../api/types';
+import { usePolling } from '../../hooks/usePolling';
+import { AsyncStatus } from '../../components/shared/AsyncStatus';
+
+interface GenerateSummarySectionProps {
+  videoId: string;
+  onSummarized: () => void;
+}
+
+export function GenerateSummarySection({ videoId, onSummarized }: GenerateSummarySectionProps) {
+  const [provider, setProvider] = useState<SummarizationProvider>('anthropic');
+  const [summarizing, setSummarizing] = useState(false);
+  const [statusText, setStatusText] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
+  const [pollingVideoId, setPollingVideoId] = useState<string | null>(null);
+
+  usePolling<SummarizationStatusResponse>({
+    key: pollingVideoId,
+    fetchStatus: async (id) => {
+      const status = await getSummarizationStatus(id);
+      setStatusText(`Status: ${status.status}...`);
+      return status;
+    },
+    onDone: () => {
+      setSummarizing(false);
+      setStatusText('Summary complete.');
+      onSummarized();
+    },
+    onError: (status) => {
+      setSummarizing(false);
+      setStatusText(null);
+      setError(status.error || 'Summarization failed.');
+    },
+  });
+
+  async function handleSummarize() {
+    setError(null);
+    setSummarizing(true);
+    setStatusText('Starting summarization...');
+
+    try {
+      await startSummarization(videoId, provider);
+      setPollingVideoId(videoId);
+    } catch (err) {
+      setSummarizing(false);
+      setStatusText(null);
+      setError(err instanceof Error ? err.message : 'Summarization request failed.');
+    }
+  }
+
+  return (
+    <section className="rounded-lg bg-ivory p-6 dark:bg-near-black dark:border dark:border-warm-gray/30">
+      <h2 className="mb-4 font-serif text-xl font-semibold">Generate new summary</h2>
+      <fieldset className="mb-4 flex items-center gap-6">
+        <legend className="sr-only">Summary provider</legend>
+        <label className="flex items-center gap-2">
+          <input
+            type="radio"
+            name="library-summary-provider"
+            value="anthropic"
+            checked={provider === 'anthropic'}
+            onChange={() => setProvider('anthropic')}
+          />
+          Anthropic (Claude)
+        </label>
+        <label className="flex items-center gap-2">
+          <input
+            type="radio"
+            name="library-summary-provider"
+            value="openai"
+            checked={provider === 'openai'}
+            onChange={() => setProvider('openai')}
+          />
+          OpenAI
+        </label>
+      </fieldset>
+      <button
+        type="button"
+        onClick={handleSummarize}
+        disabled={summarizing}
+        className="mt-4 rounded bg-terracotta px-4 py-2 font-medium text-cream hover:bg-terracotta-dark disabled:opacity-50"
+      >
+        Summarize
+      </button>
+      <AsyncStatus busy={summarizing} statusText={statusText} error={error} />
+    </section>
+  );
+}

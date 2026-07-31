@@ -125,3 +125,30 @@ the backend accept a small epsilon of slack. Touches the shared trim
 contract both apps rely on, so best done as its own small `/fix` rather than
 inside this feature.
 **Resolution:**
+
+### F-09 [P2] fixed - `SearchSection`'s initial video list fetch duplicated the Filter button's fetch logic
+
+**File:** frontend-react/src/pages/LibraryPage/SearchSection.tsx:39
+**Found:** 2026-07-30 by /autopilot audit (scope: current)
+**Why it matters:** The first working version of the mount effect couldn't call
+the shared `fetchVideos` handler directly - React's `set-state-in-effect` lint
+rule flags synchronous `setState` calls (the `setError(null)`/`setLoading(true)`
+resets at the top of `fetchVideos`) reachable from an effect body. Working
+around that by giving the mount effect its own inline `listVideos().then(...)`
+chain duplicated the exact same network-call-and-set-state logic `fetchVideos`
+already implements, in a different style, in the same file - a real,
+avoidable duplication introduced by this feature rather than a pre-existing
+pattern like F-05.
+**Suggested fix:** Defer the call with `Promise.resolve().then(() => fetchVideos())`
+so `fetchVideos`' `setState` calls run in a microtask rather than synchronously
+in the effect body (satisfying the lint rule without duplicating logic), and
+add a scoped `eslint-disable-next-line react-hooks/exhaustive-deps` since the
+effect is intentionally mount-only.
+**Resolution:** Applied the suggested fix directly in this feature (the only
+occurrence of this pattern in the codebase, and the fix is a one-line
+change) - `SearchSection.tsx`'s mount effect now calls the same `fetchVideos`
+the Filter button and Enter-key handler use, with the duplicated
+`.then()`/`.catch()`/`.finally()` chain removed. Reverified: `npm run lint`
+clean, `npm run build` clean, `npm test` 16/16, and the Step 1 Playwright
+check (initial list load, filter, no-results, row selection) re-run
+successfully against the real backend with no console errors.
