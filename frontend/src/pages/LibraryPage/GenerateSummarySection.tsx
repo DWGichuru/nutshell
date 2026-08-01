@@ -52,7 +52,7 @@ export function GenerateSummarySection({ videoId, onSummarized }: GenerateSummar
 
   return (
     <section className="rounded-lg bg-ivory p-6 dark:bg-near-black dark:border dark:border-warm-gray/30">
-      <h2 className="mb-4 font-serif text-xl font-semibold">Generate new summary</h2>
+      <h2 className="mb-4 text-lg font-semibold tracking-tight">Generate new summary</h2>
       <fieldset className="mb-4 flex items-center gap-6">
         <legend className="sr-only">Summary provider</legend>
         <label className="flex items-center gap-2">
@@ -80,7 +80,7 @@ export function GenerateSummarySection({ videoId, onSummarized }: GenerateSummar
         type="button"
         onClick={handleSummarize}
         disabled={summarizing}
-        className="mt-4 rounded bg-terracotta px-4 py-2 font-medium text-cream hover:bg-terracotta-dark disabled:opacity-50"
+        className="mt-4 rounded bg-terracotta px-4 py-2 text-sm font-medium text-cream hover:bg-terracotta-dark disabled:opacity-50"
       >
         Summarize
       </button>

@@ -50,7 +50,7 @@ export function SearchSection({ selectedVideoId, onSelectVideo }: SearchSectionP
 
   return (
     <section className="rounded-lg bg-ivory p-6 dark:bg-near-black dark:border dark:border-warm-gray/30">
-      <h2 className="mb-4 font-serif text-xl font-semibold">Library</h2>
+      <h2 className="mb-4 text-lg font-semibold tracking-tight">Library</h2>
 
       <label htmlFor="library-search" className="mb-1 block text-sm font-medium">
         Search (title or channel)
@@ -61,7 +61,7 @@ export function SearchSection({ selectedVideoId, onSelectVideo }: SearchSectionP
         value={search}
         onChange={(event) => setSearch(event.target.value)}
         onKeyDown={handleFilterKeyDown}
-        className="mb-3 w-full rounded border border-warm-gray/40 bg-cream px-3 py-2 text-espresso focus:outline-none focus:ring-2 focus:ring-terracotta dark:bg-near-black dark:text-cream"
+        className="mb-3 w-full rounded border border-warm-gray/40 bg-cream px-3 py-2 text-sm text-espresso focus:outline-none focus:ring-2 focus:ring-terracotta dark:bg-near-black dark:text-cream"
       />
 
       <div className="mb-3 flex gap-3">
@@ -75,7 +75,7 @@ export function SearchSection({ selectedVideoId, onSelectVideo }: SearchSectionP
             value={dateFrom}
             onChange={(event) => setDateFrom(event.target.value)}
             onKeyDown={handleFilterKeyDown}
-            className="w-full rounded border border-warm-gray/40 bg-cream px-3 py-2 text-espresso focus:outline-none focus:ring-2 focus:ring-terracotta dark:bg-near-black dark:text-cream"
+            className="w-full rounded border border-warm-gray/40 bg-cream px-3 py-2 text-sm text-espresso focus:outline-none focus:ring-2 focus:ring-terracotta dark:bg-near-black dark:text-cream"
           />
         </div>
         <div className="flex-1">
@@ -88,7 +88,7 @@ export function SearchSection({ selectedVideoId, onSelectVideo }: SearchSectionP
             value={dateTo}
             onChange={(event) => setDateTo(event.target.value)}
             onKeyDown={handleFilterKeyDown}
-            className="w-full rounded border border-warm-gray/40 bg-cream px-3 py-2 text-espresso focus:outline-none focus:ring-2 focus:ring-terracotta dark:bg-near-black dark:text-cream"
+            className="w-full rounded border border-warm-gray/40 bg-cream px-3 py-2 text-sm text-espresso focus:outline-none focus:ring-2 focus:ring-terracotta dark:bg-near-black dark:text-cream"
           />
         </div>
       </div>
@@ -97,7 +97,7 @@ export function SearchSection({ selectedVideoId, onSelectVideo }: SearchSectionP
         type="button"
         onClick={fetchVideos}
         disabled={loading}
-        className="rounded bg-terracotta px-4 py-2 font-medium text-cream hover:bg-terracotta-dark disabled:opacity-50"
+        className="rounded bg-terracotta px-4 py-2 text-sm font-medium text-cream hover:bg-terracotta-dark disabled:opacity-50"
       >
         Filter
       </button>
@@ -118,8 +118,8 @@ export function SearchSection({ selectedVideoId, onSelectVideo }: SearchSectionP
                 onClick={() => onSelectVideo(video.video_id)}
                 className="w-full text-left hover:text-terracotta"
               >
-                <span className="font-medium">{video.title}</span>
-                <span className="block text-sm text-warm-gray">
+                <span className="text-sm font-medium">{video.title}</span>
+                <span className="block text-xs text-warm-gray">
                   {video.channel} - {formatDate(video.date_added)}
                 </span>
               </button>

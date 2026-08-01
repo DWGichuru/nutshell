@@ -81,7 +81,7 @@ export function DownloadSection({ onDownloadStarted, onDownloadComplete }: Downl
 
   return (
     <section className="rounded-lg bg-ivory p-6 dark:bg-near-black dark:border dark:border-warm-gray/30">
-      <h2 className="mb-4 font-serif text-xl font-semibold">New Summary</h2>
+      <h2 className="mb-4 text-lg font-semibold tracking-tight">New Summary</h2>
       <label htmlFor="video-url" className="mb-2 block font-medium">
         YouTube URL
       </label>
@@ -92,13 +92,13 @@ export function DownloadSection({ onDownloadStarted, onDownloadComplete }: Downl
           value={url}
           onChange={(event) => setUrl(event.target.value)}
           placeholder="https://www.youtube.com/watch?v=..."
-          className="flex-1 rounded border border-warm-gray/40 bg-cream px-3 py-2 text-espresso focus:outline-none focus:ring-2 focus:ring-terracotta dark:bg-near-black dark:text-cream"
+          className="flex-1 rounded border border-warm-gray/40 bg-cream px-3 py-2 text-sm text-espresso focus:outline-none focus:ring-2 focus:ring-terracotta dark:bg-near-black dark:text-cream"
         />
         <button
           type="button"
           onClick={handlePreview}
           disabled={busy}
-          className="rounded bg-terracotta px-4 py-2 font-medium text-cream hover:bg-terracotta-dark disabled:opacity-50"
+          className="rounded bg-terracotta px-4 py-2 text-sm font-medium text-cream hover:bg-terracotta-dark disabled:opacity-50"
         >
           Preview
         </button>
@@ -107,7 +107,7 @@ export function DownloadSection({ onDownloadStarted, onDownloadComplete }: Downl
       {metadata && (
         <div className="mt-4 rounded bg-cream p-4 text-sm dark:bg-espresso/40">
           <p className="font-medium">{metadata.title}</p>
-          <p className="text-warm-gray">
+          <p className="text-xs text-warm-gray">
             {metadata.channel} - {formatTime(metadata.duration_seconds)}
           </p>
           {metadata.needs_confirmation && (
@@ -120,7 +120,7 @@ export function DownloadSection({ onDownloadStarted, onDownloadComplete }: Downl
             type="button"
             onClick={handleDownload}
             disabled={busy}
-            className="mt-3 rounded bg-terracotta px-4 py-2 font-medium text-cream hover:bg-terracotta-dark disabled:opacity-50"
+            className="mt-3 rounded bg-terracotta px-4 py-2 text-sm font-medium text-cream hover:bg-terracotta-dark disabled:opacity-50"
           >
             {metadata.needs_confirmation ? 'Confirm & Download' : 'Download'}
           </button>

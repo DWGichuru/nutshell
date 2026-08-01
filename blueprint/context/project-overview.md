@@ -155,8 +155,13 @@ Palette (Tailwind custom theme colors), light mode first, dark mode as option:
 | Success / Confirm | Sage Green | `#3D5A3D` |
 | Warning | Muted Rust | `#B5533C` |
 
-Typography: serif (Georgia or similar) for wordmark/headings, system
-sans-serif/Inter for body and controls. Icon/wordmark assets live in
+Typography: Inter (self-hosted variable font) throughout - headings, body,
+and controls - in a dense scale suited to a data-rich app: `text-sm` for
+controls (buttons, inputs, labels, list rows), `text-xs` for secondary/meta
+text (dates, durations, channel names, timestamps), `text-lg`/`text-xl`
+`font-semibold tracking-tight` for section and content headings. The
+"Nutshell" wordmark is a separate SVG graphic asset (not CSS-styled text),
+so it sits outside this in-app type scale. Icon/wordmark assets live in
 `blueprint/assets/` (`icon.svg`, `favicon.svg`, `wordmark-light.svg`,
 `wordmark-dark.svg`).
 

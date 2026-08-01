@@ -42,14 +42,14 @@ export function TrimSection({ videoId, onTrimmed }: TrimSectionProps) {
 
   return (
     <section className="rounded-lg bg-ivory p-6 dark:bg-near-black dark:border dark:border-warm-gray/30">
-      <h2 className="mb-4 font-serif text-xl font-semibold">Trim</h2>
+      <h2 className="mb-4 text-lg font-semibold tracking-tight">Trim</h2>
       <div id="waveform" ref={containerRef} className="rounded bg-cream dark:bg-espresso/40" />
       <div className="mt-4 flex items-center gap-2">
         <button
           type="button"
           onClick={skipBack}
           aria-label="Skip back 5 seconds"
-          className="rounded bg-ivory px-3 py-1.5 font-medium text-espresso hover:bg-warm-gray/30 dark:bg-espresso/60 dark:text-cream"
+          className="rounded bg-ivory px-3 py-1.5 text-sm font-medium text-espresso hover:bg-warm-gray/30 dark:bg-espresso/60 dark:text-cream"
         >
           «5
         </button>
@@ -57,7 +57,7 @@ export function TrimSection({ videoId, onTrimmed }: TrimSectionProps) {
           type="button"
           onClick={togglePlayPause}
           aria-label={isPlaying ? 'Pause' : 'Play'}
-          className="rounded bg-terracotta px-3 py-1.5 font-medium text-cream hover:bg-terracotta-dark"
+          className="rounded bg-terracotta px-3 py-1.5 text-sm font-medium text-cream hover:bg-terracotta-dark"
         >
           {isPlaying ? 'Pause' : 'Play'}
         </button>
@@ -65,12 +65,12 @@ export function TrimSection({ videoId, onTrimmed }: TrimSectionProps) {
           type="button"
           onClick={skipForward}
           aria-label="Skip forward 5 seconds"
-          className="rounded bg-ivory px-3 py-1.5 font-medium text-espresso hover:bg-warm-gray/30 dark:bg-espresso/60 dark:text-cream"
+          className="rounded bg-ivory px-3 py-1.5 text-sm font-medium text-espresso hover:bg-warm-gray/30 dark:bg-espresso/60 dark:text-cream"
         >
           5»
         </button>
       </div>
-      <div className="mt-4 flex items-center gap-4 text-sm">
+      <div className="mt-4 flex items-center gap-4 text-xs">
         <span>
           Start: <span className="font-medium text-terracotta">{formatTime(trimStart)}</span>
         </span>
@@ -80,7 +80,7 @@ export function TrimSection({ videoId, onTrimmed }: TrimSectionProps) {
         <button
           type="button"
           onClick={previewSelection}
-          className="ml-auto rounded bg-terracotta px-3 py-1.5 font-medium text-cream hover:bg-terracotta-dark"
+          className="ml-auto rounded bg-terracotta px-3 py-1.5 text-sm font-medium text-cream hover:bg-terracotta-dark"
         >
           Preview
         </button>
@@ -88,7 +88,7 @@ export function TrimSection({ videoId, onTrimmed }: TrimSectionProps) {
           type="button"
           onClick={handleTrim}
           disabled={trimming}
-          className="rounded bg-sage px-3 py-1.5 font-medium text-cream hover:opacity-90 disabled:opacity-50"
+          className="rounded bg-sage px-3 py-1.5 text-sm font-medium text-cream hover:opacity-90 disabled:opacity-50"
         >
           Trim
         </button>

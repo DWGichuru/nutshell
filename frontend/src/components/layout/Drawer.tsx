@@ -21,7 +21,7 @@ export function Drawer({ open, activePage, onSelectPage }: DrawerProps) {
         <button
           type="button"
           onClick={() => onSelectPage('new-summary')}
-          className={`block w-full rounded px-3 py-2.5 text-left font-medium ${
+          className={`block w-full rounded px-3 py-2.5 text-left text-sm font-medium ${
             activePage === 'new-summary' ? ACTIVE_NAV_CLASSES : INACTIVE_NAV_CLASSES
           }`}
         >
@@ -30,7 +30,7 @@ export function Drawer({ open, activePage, onSelectPage }: DrawerProps) {
         <button
           type="button"
           onClick={() => onSelectPage('library')}
-          className={`block w-full rounded px-3 py-2.5 text-left font-medium ${
+          className={`block w-full rounded px-3 py-2.5 text-left text-sm font-medium ${
             activePage === 'library' ? ACTIVE_NAV_CLASSES : INACTIVE_NAV_CLASSES
           }`}
         >
