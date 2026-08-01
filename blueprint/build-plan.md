@@ -98,7 +98,7 @@ Sequential checklist for building the app. Each phase builds on the previous one
   - [x] 11c. Library flow - search/filter/list, row selection with
         stale-response guarding, video detail (full summary history), and
         generate-new-summary-in-place.
-  - [ ] 11d. Dark mode toggle + wordmark/favicon assets - wire up the dormant
+  - [x] 11d. Dark mode toggle + wordmark/favicon assets - wire up the dormant
         `dark:` styling with a real toggle, and apply the `blueprint/assets/`
         wordmark/favicon SVGs in place of the plain-text heading.
   - [ ] 11e. Cutover + regression - build the React app, point `backend/main.py`'s
