@@ -1,8 +1,9 @@
 # Coding Standards
 
 > Your conventions. Edit these once to match your stack. Tuned for this
-> project's real stack: Python + FastAPI backend, vanilla HTML/JS + Tailwind
-> (CDN) frontend, SQLite via stdlib `sqlite3`. Single local user, no auth.
+> project's real stack: Python + FastAPI backend, React + TypeScript (Vite
+> build) + Tailwind CSS frontend, SQLite via stdlib `sqlite3`. Single local
+> user, no auth.
 
 ## Python
 
@@ -36,7 +37,10 @@
   `backend/adapters/summarization/[provider].py`
 - Data access (SQLite index): `backend/db.py` or `backend/index.py`
 - Video storage helpers (folder layout, `meta.json`, etc.): `backend/storage.py`
-- Frontend: `frontend/index.html`, `frontend/js/[feature].js`, `frontend/css/`
+- Frontend: `frontend/src/pages/[Page]/` (page + its sections),
+  `frontend/src/components/{layout,shared}/` (shared components),
+  `frontend/src/hooks/use[Name].ts`, `frontend/src/lib/[name].ts` (pure
+  logic), `frontend/src/api/` (typed client + shared types)
 - Pydantic models / shared types: `backend/models.py` (or split per feature
   once it grows)
 
@@ -45,12 +49,13 @@
 - Python files/functions/variables: `snake_case`
 - Python classes (Pydantic models, adapter classes): `PascalCase`
 - Constants: `SCREAMING_SNAKE_CASE`
-- JS files/functions/variables: `camelCase`
+- TypeScript files/functions/variables: `camelCase` (`format.ts`,
+  `usePolling.ts`); React components: `PascalCase` (`TopBar.tsx`)
 - Video folder / `video_id`: derived from the YouTube video id, lowercase
 
 ## Styling
 
-- Tailwind CSS via CDN script tag - no build step, no `tailwind.config.js`
+- Tailwind CSS v3 via PostCSS, configured in `frontend/tailwind.config.js`
 - Use the palette and typography from `project-overview.md` (Design section)
   as Tailwind theme values
 - No inline styles beyond what's unavoidable for wavesurfer.js mount points

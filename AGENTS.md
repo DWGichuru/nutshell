@@ -112,13 +112,15 @@ Python + FastAPI backend. Activate the virtual environment first: `source venv/b
 - Browser check: Playwright (Python) is installed for browser verification; Chromium is
   already downloaded (`playwright install chromium`).
 
-React + TypeScript frontend, in `frontend-react/` during the Phase 11 rewrite
-(will become `frontend/` at cutover). Run commands from that directory.
+React + TypeScript frontend (Vite build), in `frontend/`. Run commands from
+that directory.
 
 - Install deps: `npm install`
 - Dev server: `npm run dev` (http://localhost:5173, proxies `/api` to the
   FastAPI dev server on `:8000`)
-- Build: `npm run build`
+- Build: `npm run build` (outputs to `frontend/dist/`, which the FastAPI
+  server serves at `/` - run this at least once before starting the backend
+  with `uvicorn` alone)
 - Test: `npm test`
 - Lint: `npm run lint`
 

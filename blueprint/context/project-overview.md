@@ -195,11 +195,9 @@ Local only - no host, no public deployment.
 - `build-plan.md` Phase 11 (React + TypeScript frontend rewrite) replaces the
   frontend's implementation only - the 3-pane UI/UX, design palette, and data
   model above are the unchanged target; only the Tech Stack Frontend line
-  changes (Vite build replacing the CDN/no-build-step setup). It also closes
-  three gaps present in the current vanilla implementation but never
-  documented as shipped: a working dark-mode toggle, a pre-download metadata
-  preview step (using the existing but previously-unused
-  `POST /api/videos/metadata` endpoint), and applying the wordmark/favicon
-  assets from `blueprint/assets/` (previously unused). Until this phase
-  completes, the actual running code is still the vanilla HTML/JS frontend
-  described in past history entries.
+  changes (Vite build replacing the CDN/no-build-step setup). It also closed
+  three gaps present in the prior vanilla implementation but never documented
+  as shipped: a working dark-mode toggle, a pre-download metadata preview
+  step (using the existing but previously-unused `POST /api/videos/metadata`
+  endpoint), and applying the wordmark/favicon assets from
+  `blueprint/assets/` (previously unused).

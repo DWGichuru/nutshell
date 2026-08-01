@@ -83,7 +83,7 @@ Sequential checklist for building the app. Each phase builds on the previous one
   - [x] 10b. Draggable resize divider - draggable interaction-pane/AI-pane boundary with drag indicators, applied to both New Summary and Library.
 
 ## Phase 11: Frontend Rewrite (React + TypeScript)
-- [ ] 11. Rewrite the frontend as a React + TypeScript app (Vite build), replacing the
+- [x] 11. Rewrite the frontend as a React + TypeScript app (Vite build), replacing the
       current vanilla HTML/JS + Tailwind CDN frontend with full behavioral parity,
       plus closing three latent gaps: a working dark-mode toggle, a pre-download
       metadata preview step, and the existing wordmark/favicon assets applied to the UI.
@@ -101,7 +101,7 @@ Sequential checklist for building the app. Each phase builds on the previous one
   - [x] 11d. Dark mode toggle + wordmark/favicon assets - wire up the dormant
         `dark:` styling with a real toggle, and apply the `blueprint/assets/`
         wordmark/favicon SVGs in place of the plain-text heading.
-  - [ ] 11e. Cutover + regression - build the React app, point `backend/main.py`'s
+  - [x] 11e. Cutover + regression - build the React app, point `backend/main.py`'s
         static serving at the build output, delete the old `frontend/index.html`
         and `frontend/js/`, update `AGENTS.md`/`coding-standards.md`/
         `project-overview.md` for the new stack, and run a full light/dark
