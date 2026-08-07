@@ -1,3 +1,4 @@
+import os
 from collections.abc import AsyncIterator
 from contextlib import asynccontextmanager
 
@@ -8,9 +9,9 @@ from fastapi.staticfiles import StaticFiles
 from backend.db import init_db
 from backend.routes.videos import router as videos_router
 
-FRONTEND_DIST_DIR = "frontend/dist"
+FRONTEND_DIST_DIR = os.environ.get("NUTSHELL_FRONTEND_DIR", "frontend/dist")
 
-load_dotenv()
+load_dotenv(dotenv_path=os.environ.get("NUTSHELL_ENV_FILE"))
 
 
 @asynccontextmanager

@@ -1,3 +1,4 @@
+import os
 from dataclasses import dataclass
 from datetime import UTC, datetime
 from pathlib import Path
@@ -5,8 +6,15 @@ from typing import Any
 
 from backend.models import Transcript, VideoMeta
 
-DATA_ROOT = Path("data/videos")
 SUMMARY_TIMESTAMP_FORMAT = "%Y%m%dT%H%M%S%fZ"
+
+
+def _resolve_data_root() -> Path:
+    data_dir = os.environ.get("NUTSHELL_DATA_DIR")
+    return Path(data_dir) / "videos" if data_dir else Path("data/videos")
+
+
+DATA_ROOT = _resolve_data_root()
 
 
 def derive_video_id(info: dict[str, Any]) -> str:

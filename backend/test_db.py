@@ -236,3 +236,15 @@ def test_rebuild_index_drops_stale_rows_no_longer_on_disk(db_path, tmp_path):
     assert count == 1
     assert _fetch_video(db_path, "abc123") is None
     assert _fetch_video(db_path, "ghi789") is not None
+
+
+def test_resolve_db_path_defaults_to_relative_data_index_db(monkeypatch):
+    monkeypatch.delenv("NUTSHELL_DATA_DIR", raising=False)
+
+    assert db._resolve_db_path() == Path("data/index.db")
+
+
+def test_resolve_db_path_uses_nutshell_data_dir_when_set(monkeypatch):
+    monkeypatch.setenv("NUTSHELL_DATA_DIR", "/tmp/nutshell-data")
+
+    assert db._resolve_db_path() == Path("/tmp/nutshell-data/index.db")

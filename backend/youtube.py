@@ -1,3 +1,4 @@
+import os
 import subprocess
 from pathlib import Path
 from typing import Any
@@ -10,6 +11,10 @@ class YouTubeError(Exception):
 
 
 PLAYLIST_ERROR_MESSAGE = "This looks like a playlist. Paste a link to a single video instead."
+
+
+def ffmpeg_path() -> str:
+    return os.environ.get("NUTSHELL_FFMPEG_PATH", "ffmpeg")
 
 
 def fetch_metadata(url: str) -> dict[str, Any]:
@@ -49,7 +54,7 @@ def trim_audio(src_path: Path, start_seconds: float, end_seconds: float) -> Path
     try:
         subprocess.run(
             [
-                "ffmpeg",
+                ffmpeg_path(),
                 "-y",
                 "-i",
                 str(src_path),
@@ -77,7 +82,7 @@ def convert_to_mp3(src_path: Path) -> Path:
     dest_path = src_path.with_suffix(".mp3")
     try:
         subprocess.run(
-            ["ffmpeg", "-y", "-i", str(src_path), str(dest_path)],
+            [ffmpeg_path(), "-y", "-i", str(src_path), str(dest_path)],
             check=True,
             capture_output=True,
         )

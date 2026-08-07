@@ -1,10 +1,17 @@
+import os
 import sqlite3
 from pathlib import Path
 
 from backend import storage
 from backend.models import VideoMeta
 
-DB_PATH = Path("data/index.db")
+
+def _resolve_db_path() -> Path:
+    data_dir = os.environ.get("NUTSHELL_DATA_DIR")
+    return Path(data_dir) / "index.db" if data_dir else Path("data/index.db")
+
+
+DB_PATH = _resolve_db_path()
 
 _SCHEMA = """
 CREATE TABLE IF NOT EXISTS videos (

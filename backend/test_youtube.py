@@ -5,6 +5,18 @@ import pytest
 from backend import youtube
 
 
+def test_ffmpeg_path_defaults_to_ffmpeg_on_path(monkeypatch):
+    monkeypatch.delenv("NUTSHELL_FFMPEG_PATH", raising=False)
+
+    assert youtube.ffmpeg_path() == "ffmpeg"
+
+
+def test_ffmpeg_path_uses_nutshell_ffmpeg_path_when_set(monkeypatch):
+    monkeypatch.setenv("NUTSHELL_FFMPEG_PATH", "/opt/nutshell/bin/ffmpeg")
+
+    assert youtube.ffmpeg_path() == "/opt/nutshell/bin/ffmpeg"
+
+
 def test_convert_to_mp3_skips_conversion_when_already_mp3(tmp_path):
     src = tmp_path / "audio.mp3"
     src.write_bytes(b"fake")

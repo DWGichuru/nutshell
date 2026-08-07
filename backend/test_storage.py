@@ -1,4 +1,5 @@
 from datetime import UTC, datetime
+from pathlib import Path
 
 import pytest
 
@@ -84,3 +85,15 @@ def test_list_summaries_missing_directory_returns_empty_list_without_creating_it
 
     assert entries == []
     assert not (storage.DATA_ROOT / "does-not-exist").exists()
+
+
+def test_resolve_data_root_defaults_to_relative_data_videos(monkeypatch):
+    monkeypatch.delenv("NUTSHELL_DATA_DIR", raising=False)
+
+    assert storage._resolve_data_root() == Path("data/videos")
+
+
+def test_resolve_data_root_uses_nutshell_data_dir_when_set(monkeypatch):
+    monkeypatch.setenv("NUTSHELL_DATA_DIR", "/tmp/nutshell-data")
+
+    assert storage._resolve_data_root() == Path("/tmp/nutshell-data/videos")
